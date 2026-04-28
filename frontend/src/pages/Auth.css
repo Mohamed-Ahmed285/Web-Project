@@ -1,0 +1,333 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:wght@300;400;500&display=swap");
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.auth-bg {
+  width: 100%;
+  height: 104vh;
+  position: relative;
+  font-family: "Crimson Pro", Georgia, serif;
+  background-image: url("../assets/book.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.book-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.book-form-overlay {
+  position: absolute;
+  top: 50%;
+  left: 16%;
+  transform: translateY(-55%);
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 0.8rem;
+}
+
+.journal-title {
+  font-family: "Playfair Display", serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #3d1f00;
+}
+
+.title-underline {
+  margin: 0.3rem auto 0;
+  width: 70%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #8b5e1a, transparent);
+}
+
+.page-subtitle {
+  font-family: "IM Fell English", serif;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: #7a5220;
+  margin-top: 0.25rem;
+}
+
+.journal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.error-msg {
+  font-size: 0.6rem;
+  color: #c0392b;
+  font-style: italic;
+  line-height: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.field-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #5c3d11;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.journal-input {
+  background: rgba(255, 245, 210, 0.35);
+  border: none;
+  border-bottom: 1.5px solid #9b7320;
+  border-radius: 0;
+  padding: 0.28rem 0.2rem;
+  font-family: "Crimson Pro", serif;
+  font-size: 0.88rem;
+  color: #2d1800;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.journal-input::placeholder {
+  color: #b09060;
+  opacity: 0.8;
+}
+
+.journal-input:focus {
+  border-bottom-color: #8b1a1a;
+  background: rgba(255, 245, 210, 0.6);
+}
+
+.journal-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239B7320' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.3rem center;
+  padding-right: 1.5rem;
+}
+
+.input-error {
+  border-bottom-color: #8b1a1a !important;
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+.input-error::placeholder {
+  color: #8b1a1a88;
+  font-size: 0.7rem;
+}
+
+.journal-select.input-error {
+  color: #bf646471;
+  font-size: 0.7rem;
+}
+
+.server-error {
+  background: rgba(139, 26, 26, 0.1);
+  border: 1px solid rgba(139, 26, 26, 0.3);
+  border-radius: 3px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  color: #8b1a1a;
+  text-align: center;
+}
+
+.submit-btn {
+  margin-top: 0.5rem;
+  padding: 0.45rem 1rem;
+  background: #8b1a1a;
+  color: #f5e6c8;
+  font-family: "Playfair Display", serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border: 2px solid #6b1010;
+  border-radius: 3px;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.1s;
+  box-shadow: 0 3px 8px rgba(139, 26, 26, 0.3);
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #6b1010;
+}
+.submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.divider::before {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #9b7320);
+}
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to left, transparent, #9b7320);
+}
+
+.divider span {
+  font-size: 0.7rem;
+  color: #8b6914;
+  font-style: italic;
+}
+
+.switch-link {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #7a5220;
+}
+
+.switch-link a {
+  color: #8b1a1a;
+  text-decoration: none;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.switch-link a:hover {
+  text-decoration: underline;
+}
+
+.book-form-overlay.register {
+  top: 46%;
+  left: 16.1%;
+  transform: translateY(-50%);
+  width: 25%;
+  overflow-y: auto;
+}
+
+.book-form-overlay.register .page-header {
+  margin-bottom: 1rem;
+}
+
+.book-form-overlay.register .journal-title {
+  font-size: 1.1rem;
+}
+
+.book-form-overlay.register .journal-form {
+  gap: 0.2rem;
+}
+
+.book-form-overlay.register .field-label {
+  font-size: 0.6rem;
+}
+
+.book-form-overlay.register .journal-input {
+  padding: 0.1rem 0.2rem;
+  font-size: 0.8rem;
+}
+
+.book-form-overlay.register .submit-btn {
+  margin-top: 0.15rem;
+  padding: 0.25rem 1rem;
+  font-size: 0.78rem;
+}
+
+.book-form-overlay.register .google-btn {
+  padding: 0.2rem 1rem;
+  font-size: 0.78rem;
+}
+
+.book-form-overlay.register .switch-link {
+  font-size: 0.68rem;
+}
+
+.book-form-overlay.register .divider span {
+  font-size: 0.62rem;
+}
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.journal-input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 1.5rem;
+  transform: none;
+  background: none;
+  border: none;
+  color: #9b7320;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .auth-bg {
+    background-image: url("../assets/bookphone.png");
+    background-size: cover;
+    background-position: center;
+  }
+  .book-form-overlay,
+  .book-form-overlay.register {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 85%;
+    background: rgba(245, 230, 190, 0.92);
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}

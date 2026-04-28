@@ -1,0 +1,36 @@
+body {
+  margin: 0;
+  font-family: Georgia, serif;
+  background: url("/bg.jpg") no-repeat center/cover;
+}
+
+.auth-container {
+  display: flex;
+  height: 100vh;
+}
+
+.left-panel {
+  width: 40%;
+  background: rgba(255, 248, 220, 0.9);
+  padding: 40px;
+  border-right: 3px solid #5c3d2e;
+}
+
+.right-panel {
+  flex: 1;
+  background: url("/book.png") no-repeat center/contain;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.btn {
+  width: 100%;
+  padding: 10px;
+  background: darkred;
+  color: white;
+  border: none;
+}
