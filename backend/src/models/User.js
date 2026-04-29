@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
     },
+    profile_image: {
+      type: String,
+      required: [true, "Profile image URL/path is required"],
+      default: "",
+    },
     gender: {
       type: String,
       required: [true, "Gender is required"],
