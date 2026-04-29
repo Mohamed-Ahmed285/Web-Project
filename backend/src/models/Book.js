@@ -14,6 +14,10 @@ const bookSchema = new mongoose.Schema(
       type: String,
       required: [true, "Cover image URL/path is required"],
     },
+    published_year: {
+      type: Number,
+      required: [true, "Published year is required"],
+    },
     categories: {
       type: [String],
       required: [true, "At least one category is required"],
