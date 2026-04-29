@@ -1,12 +1,42 @@
-// models/User.js
 import mongoose from "mongoose";
 
-// An empty schema with { strict: false } tells Mongoose:
-// "Accept absolutely any data structure I pass to you."
-const userSchema = new mongoose.Schema({}, { strict: false });
+const userSchema = new mongoose.Schema(
+  {
+    first_name: {
+      type: String,
+      required: [true, "First name is required"],
+    },
+    second_name: {
+      type: String,
+      required: [true, "Second name is required"],
+    },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+    },
+    gender: {
+      type: String,
+      required: [true, "Gender is required"],
+      enum: ["male", "female", "other"],
+    },
+    is_admin: {
+      type: Boolean,
+      required: [true, "Admin status is required"],
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
 
-// The first argument "User" is the model name.
-// The third argument "users" forces Mongoose to use your exact existing collection name in the DB.
-const User = mongoose.model("User", userSchema, "users");
+const User = mongoose.model("User", userSchema);
 
 export default User;
