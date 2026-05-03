@@ -11,7 +11,7 @@ const TOP_BOOKS = [
   { id: 4, title: "Atomic Habits", author: "James Clear", cover: "https://covers.openlibrary.org/b/id/10527107-L.jpg" },
   { id: 5, title: "The 5 AM Club", author: "Robin Sharma", cover: "https://covers.openlibrary.org/b/id/8739368-L.jpg" },
   { id: 6, title: "Dune", author: "Frank Herbert", cover: "https://covers.openlibrary.org/b/id/10921787-L.jpg" },
-   { id: 7, title: "To Kill a Mockingbird", author: "Harper Lee", cover: "https://covers.openlibrary.org/b/id/8225261-L.jpg" },
+  { id: 7, title: "To Kill a Mockingbird", author: "Harper Lee", cover: "https://covers.openlibrary.org/b/id/8225261-L.jpg" },
   { id: 8, title: "Pride and Prejudice", author: "Jane Austen", cover: "https://covers.openlibrary.org/b/id/8091016-L.jpg" },
   { id: 9, title: "The Catcher in the Rye", author: "J.D. Salinger", cover: "https://covers.openlibrary.org/b/id/8231856-L.jpg" },
   { id: 10, title: "The Great Gatsby", author: "F. Scott Fitzgerald", cover: "https://covers.openlibrary.org/b/id/7352160-L.jpg" },
@@ -111,7 +111,7 @@ export default function UserDashboard() {
 
       {/* Search */}
       <div style={s.searchRow}>
-        <SearchCatalog onSearch={(q) => console.log("Search:", q)} />
+        <SearchCatalog books={TOP_BOOKS} onSearch={(q, results) => console.log("Search:", q, results)} />
       </div>
 
       {/* Top Books */}
