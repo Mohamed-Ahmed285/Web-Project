@@ -48,8 +48,12 @@ export default function Register() {
         if (!response.ok) {
           setServerError(data.message || "Registration failed.");
         } else{
-          localStorage.setItem("token", data.token);
-          navigate("/dashboard");
+          if (data.token) {
+            localStorage.setItem("token", data.token);
+            navigate("/dashboard");
+          } else {
+            setServerError("Registration succeeded but no token received.");
+          }
         }
       } catch {
         setServerError("Network error. Please try again.");
