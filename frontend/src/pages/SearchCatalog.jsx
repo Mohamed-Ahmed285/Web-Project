@@ -41,7 +41,7 @@ const styles = {
     borderRadius: "40px",
     padding: "10px 22px",
     width: "100%",
-    maxWidth: "700px",
+    maxWidth: "840px",
     boxShadow: "0 2px 12px rgba(80,50,20,0.10)",
     backdropFilter: "blur(2px)",
     boxSizing: "border-box",

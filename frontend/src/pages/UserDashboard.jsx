@@ -11,6 +11,16 @@ const TOP_BOOKS = [
   { id: 4, title: "Atomic Habits", author: "James Clear", cover: "https://covers.openlibrary.org/b/id/10527107-L.jpg" },
   { id: 5, title: "The 5 AM Club", author: "Robin Sharma", cover: "https://covers.openlibrary.org/b/id/8739368-L.jpg" },
   { id: 6, title: "Dune", author: "Frank Herbert", cover: "https://covers.openlibrary.org/b/id/10921787-L.jpg" },
+   { id: 7, title: "To Kill a Mockingbird", author: "Harper Lee", cover: "https://covers.openlibrary.org/b/id/8225261-L.jpg" },
+  { id: 8, title: "Pride and Prejudice", author: "Jane Austen", cover: "https://covers.openlibrary.org/b/id/8091016-L.jpg" },
+  { id: 9, title: "The Catcher in the Rye", author: "J.D. Salinger", cover: "https://covers.openlibrary.org/b/id/8231856-L.jpg" },
+  { id: 10, title: "The Great Gatsby", author: "F. Scott Fitzgerald", cover: "https://covers.openlibrary.org/b/id/7352160-L.jpg" },
+  { id: 11, title: "Brave New World", author: "Aldous Huxley", cover: "https://covers.openlibrary.org/b/id/8775116-L.jpg" },
+  { id: 12, title: "The Lord of the Rings", author: "J.R.R. Tolkien", cover: "https://covers.openlibrary.org/b/id/8231990-L.jpg" },
+  { id: 13, title: "Harry Potter and the Sorcerer's Stone", author: "J.K. Rowling", cover: "https://covers.openlibrary.org/b/id/7984916-L.jpg" },
+  { id: 14, title: "The Book Thief", author: "Markus Zusak", cover: "https://covers.openlibrary.org/b/id/8235081-L.jpg" },
+  { id: 15, title: "The Kite Runner", author: "Khaled Hosseini", cover: "https://covers.openlibrary.org/b/id/8228691-L.jpg" },
+  { id: 16, title: "Sapiens", author: "Yuval Noah Harari", cover: "https://covers.openlibrary.org/b/id/8370226-L.jpg" },
 ];
 
 const COLLECTIONS = [
@@ -107,7 +117,7 @@ export default function UserDashboard() {
       {/* Top Books */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>Top Books</h2>
-        <ScrollRow itemWidth={140} visibleCount={6}>
+        <ScrollRow itemWidth={140} visibleCount={7}>
           {TOP_BOOKS.map(b => <BookCard key={b.id} book={b} />)}
         </ScrollRow>
 
@@ -116,7 +126,7 @@ export default function UserDashboard() {
       {/* My Collections */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>My Collections</h2>
-        <ScrollRow itemWidth={260} visibleCount={3}>
+        <ScrollRow itemWidth={260} visibleCount={4}>
           {COLLECTIONS.map(c => <CollectionCard key={c.id} col={c} />)}
         </ScrollRow>
       </section>

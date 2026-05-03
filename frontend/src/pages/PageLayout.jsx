@@ -1,4 +1,4 @@
-import bgImage from "../assets/pageBackground.jpeg";
+import bgImage from "../assets/pageBackground.jpg";
 import shelfIcon from "../assets/shelfIcon.png";
 
 export default function PageLayout({ children }) {
@@ -47,7 +47,7 @@ const s = {
     backgroundRepeat: "no-repeat",
   },
   leftPanel: {
-    width: "35%",
+    width: "27%",
     flexShrink: 0,
   },
   rightPanel: {
