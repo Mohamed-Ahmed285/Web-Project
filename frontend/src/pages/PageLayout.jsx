@@ -62,10 +62,11 @@ const s = {
     position: "relative",
   },
   logoArea: {
-    position: "absolute",
-    top: "25px",
-    right: "50px",
-  },
+  position: "absolute",
+  top: "25px",
+  right: "50px",
+  zIndex: 100, 
+},
   logoIcon: {
     width: "90px",
     height: "90px",

@@ -43,13 +43,6 @@ const MOCK_DATA = {
   ],
   recentActivity: [
     {
-      id: "a1",
-      type: "borrow",
-      user: "John Doe",
-      book: "The Alchemist",
-      time: "10 min ago",
-    },
-    {
       id: "a2",
       type: "register",
       user: "Sarah Smith",

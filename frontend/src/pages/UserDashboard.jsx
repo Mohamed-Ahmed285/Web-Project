@@ -2,6 +2,7 @@ import { useState } from "react";
 import React from "react";
 import SearchCatalog from "./SearchCatalog";
 import PageLayout from "./PageLayout";
+import { useNavigate } from "react-router-dom";
 
 // ── Sample data ────────────────────────────────────────────────────────────────
 const TOP_BOOKS = [
@@ -34,11 +35,13 @@ const COLLECTIONS = [
 // ── Sub-components ─────────────────────────────────────────────────────────────
 function BookCard({ book }) {
   const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
   return (
     <div
       style={{ ...s.bookCard, transform: hovered ? "translateY(-6px) scale(1.03)" : "none", transition: "transform 0.25s ease" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(`/book/${book.id}`)}
     >
       <div style={s.coverWrap}>
         <img src={book.cover} alt={book.title} style={s.coverImg} />

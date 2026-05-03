@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function SearchCatalog({ placeholder = "Search about your book...", onSearch, books = [] }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
+  const navigate = useNavigate();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -64,9 +66,11 @@ export default function SearchCatalog({ placeholder = "Search about your book...
   };
 
   const handleSelect = (book) => {
-    setQuery(book.title);
+    setQuery("");
+    setResults([]);
     setOpen(false);
     if (onSearch) onSearch(book.title, [book]);
+    navigate(`/book/${book.id}`);
   };
 
   return (

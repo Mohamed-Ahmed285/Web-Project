@@ -5,39 +5,45 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
   box-sizing: border-box;
   color: #3a2a0e;
 }
 
+/* ── Header ─────────────────────────────────────────── */
 .adm-header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding-left: 2rem;
+  padding-left: 7rem;
   padding-right: 2rem;
 }
+
 .adm-title {
   font-family: "Playfair Display", Georgia, serif;
-  font-size: 1.7rem;
+  font-size: 2.7rem;
   font-weight: 700;
   color: #2c1a06;
   margin: 0;
-  line-height: 1.1;
+  line-height: 1.4;
+  padding-top: 5%;
 }
 
 .adm-subtitle {
-  font-size: 0.85rem;
+  font-size: 1.2rem;
   color: #7a5a2a;
   margin: 0;
   font-style: italic;
 }
 
+/* ── Slider ─────────────────────────────────────────── */
 .adm-slider-wrap {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
   flex: 1;
+  padding-left: 7rem;
+  padding-right: 2rem;
 }
 
 .adm-viewport {
@@ -100,14 +106,14 @@
   animation: slideInFwd 0.22s ease-out;
 }
 
-/* Arrows */
+/* ── Arrows ─────────────────────────────────────────── */
 .adm-arrow {
   background: rgba(245, 232, 190, 0.7);
   border: 1px solid rgba(140, 100, 40, 0.4);
   color: #5a3810;
-  font-size: 1rem;
-  width: 30px;
-  height: 30px;
+  font-size: 1.2rem;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -125,16 +131,17 @@
   pointer-events: none;
 }
 
+/* ── Dots ───────────────────────────────────────────── */
 .adm-dots {
   display: flex;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.6rem;
   margin-top: -0.3rem;
 }
 
 .adm-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: rgba(140, 100, 40, 0.3);
   cursor: pointer;
@@ -144,6 +151,7 @@
   background: #7a5020;
 }
 
+/* ── Stats ──────────────────────────────────────────── */
 .adm-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -153,47 +161,42 @@
 .adm-stat-card {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1rem;
   background: rgba(245, 232, 190, 0.55);
   border: 1px solid rgba(140, 100, 40, 0.35);
   border-radius: 6px;
-  padding: 0.9rem 1rem;
+  padding: 1.8rem 1.4rem;
   backdrop-filter: blur(2px);
 }
 
 .adm-stat-icon {
-  font-size: 1.5rem;
+  font-size: 6rem;
   opacity: 0.8;
 }
 
 .adm-stat-value {
   font-family: "Playfair Display", serif;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.8rem;
+  font-weight: 800;
   color: #2c1a06;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .adm-stat-label {
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   color: #7a5a2a;
   margin-top: 0.1rem;
 }
 
-/* ── Panel 1 ────────────────────────────────────────── */
-.adm-panel1 {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-/* ── Panel 2 ────────────────────────────────────────── */
+/* ── Panels ─────────────────────────────────────────── */
+.adm-panel1,
 .adm-panel2 {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
 }
 
+/* ── Grid ───────────────────────────────────────────── */
 .adm-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -205,22 +208,22 @@
   background: rgba(245, 232, 190, 0.5);
   border: 1px solid rgba(140, 100, 40, 0.3);
   border-radius: 6px;
-  padding: 0.8rem 1.1rem;
+  padding: 1.3rem 1.4rem;
   backdrop-filter: blur(2px);
 }
 
 .adm-card-title {
   font-family: "Playfair Display", serif;
-  font-size: 0.95rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #2c1a06;
-  margin: 0 0 0.6rem;
-  padding-bottom: 0.35rem;
+  margin: 0 0 0.8rem;
+  padding-bottom: 0.4rem;
   border-bottom: 1px solid rgba(140, 100, 40, 0.25);
 }
 
 .adm-chart-wrap {
-  height: 95px;
+  height: 170px;
   width: 100%;
 }
 
@@ -235,7 +238,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.32rem 0;
+  padding: 0.75rem 0;
   border-bottom: 1px solid rgba(140, 100, 40, 0.15);
 }
 .adm-book-item:last-child {
@@ -247,7 +250,7 @@
   font-weight: 600;
   color: #8b6914;
   min-width: 1rem;
-  font-size: 0.85rem;
+  font-size: 1.65rem;
 }
 .adm-book-info {
   flex: 1;
@@ -255,18 +258,18 @@
   flex-direction: column;
 }
 .adm-book-title {
-  font-size: 0.83rem;
+  font-size: 1.35rem;
   color: #2c1a06;
   font-weight: 500;
 }
 .adm-book-author {
-  font-size: 0.72rem;
+  font-size: 1.22rem;
   color: #8b6914;
   font-style: italic;
 }
 .adm-book-count {
   font-family: "Playfair Display", serif;
-  font-size: 0.83rem;
+  font-size: 1.32rem;
   color: #6b4f12;
   font-weight: 600;
 }
@@ -282,7 +285,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  padding: 0.32rem 0;
+  padding: 0.75rem 0;
   border-bottom: 1px solid rgba(140, 100, 40, 0.15);
 }
 .adm-activity-item:last-child {
@@ -290,14 +293,15 @@
 }
 
 .act-icon {
-  font-size: 0.88rem;
+  font-size: 2rem;
   opacity: 0.75;
   flex-shrink: 0;
   line-height: 1.5;
 }
+
 .adm-act-text {
   flex: 1;
-  font-size: 0.8rem;
+  font-size: 1.2rem;
   color: #3a2a0e;
   line-height: 1.4;
 }
@@ -310,7 +314,7 @@
   font-style: italic;
 }
 .adm-act-time {
-  font-size: 0.7rem;
+  font-size: 0.88rem;
   color: #a08040;
   white-space: nowrap;
   flex-shrink: 0;
@@ -328,7 +332,7 @@
   border: 1.5px solid #7a5020;
   color: #5a3810;
   font-family: "EB Garamond", serif;
-  font-size: 1rem;
+  font-size: 1.5rem;
   padding: 0.45rem 2rem;
   border-radius: 4px;
   cursor: pointer;
@@ -346,105 +350,178 @@
 .adm-loading {
   text-align: center;
   padding: 2rem;
-  font-size: 1rem;
+  font-size: 2rem;
   color: #7a5a2a;
   font-style: italic;
 }
 
-/* ── Modal ──────────────────────────────────────────── */
-.adm-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(30, 15, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(3px);
-}
-
-.adm-modal {
-  background: #f5e8c0;
-  border: 1.5px solid rgba(140, 100, 40, 0.5);
-  border-radius: 8px;
-  padding: 2rem;
-  width: 420px;
-  max-width: 90vw;
-}
-
-.adm-modal-title {
-  font-family: "Playfair Display", serif;
-  font-size: 1.3rem;
-  color: #2c1a06;
-  margin: 0 0 1.2rem;
-}
-.adm-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.adm-form label {
-  font-size: 0.85rem;
-  color: #6b4f12;
-  font-style: italic;
-}
-.adm-form input {
-  border: 1px solid rgba(140, 100, 40, 0.4);
-  background: rgba(245, 232, 190, 0.6);
-  border-radius: 4px;
-  padding: 0.5rem 0.75rem;
-  font-family: "EB Garamond", serif;
-  font-size: 1rem;
-  color: #2c1a06;
-  outline: none;
-}
-.adm-form input:focus {
-  border-color: #8b6914;
-}
-.adm-form-error {
-  font-size: 0.85rem;
-  color: #8b2020;
-  margin: 0 0 0.5rem;
-}
-.adm-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.8rem;
-  margin-top: 0.8rem;
-}
-.adm-btn-cancel {
-  background: transparent;
-  border: 1px solid rgba(140, 100, 40, 0.4);
-  color: #7a5020;
-  font-family: "EB Garamond", serif;
-  font-size: 0.95rem;
-  padding: 0.45rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.adm-btn-submit {
-  background: #7a5020;
-  border: none;
-  color: #f5e8c8;
-  font-family: "EB Garamond", serif;
-  font-size: 0.95rem;
-  padding: 0.45rem 1.2rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.adm-btn-submit:hover {
-  background: #5a3810;
-}
-
 /* ── Responsive ─────────────────────────────────────── */
-@media (max-width: 700px) {
+
+@media (min-width: 1400px) {
+  .adm-header {
+    padding-left: 7rem;
+  }
+  .adm-slider-wrap {
+    padding-left: 7rem;
+  }
+  .adm-stat-card {
+    padding: 2rem 1.6rem;
+  }
+  .adm-stat-value {
+    font-size: 3rem;
+  }
+  .adm-stat-icon {
+    font-size: 2.3rem;
+  }
+  .adm-act-text {
+    font-size: 1.3rem;
+  }
+  .adm-book-rank {
+    font-size: 1.5rem;
+  }
+  .adm-book-title {
+    font-size: 1.5rem;
+  }
+  .adm-book-author {
+    font-size: 1.32rem;
+  }
+  .adm-book-count {
+    font-size: 1.52rem;
+  }
+  .adm-subtitle {
+    font-size: 1.7rem;
+  }
+}
+@media (max-width: 1210px) {
+  .adm-stat-icon {
+    font-size: 2.3rem;
+  }
+  .adm-act-text {
+    font-size: 0.8rem;
+  }
+  .adm-book-rank {
+    font-size: 0.9rem;
+  }
+  .adm-book-title {
+    font-size: 1rem;
+  }
+  .adm-book-author {
+    font-size: 0.82rem;
+  }
+  .adm-book-count {
+    font-size: 0.82rem;
+  }
+}
+@media (max-width: 1200px) {
+  .adm-header {
+    padding-left: 4rem;
+  }
+  .adm-slider-wrap {
+    padding-left: 4rem;
+  }
+  .adm-title {
+    font-size: 2rem;
+  }
+  .adm-stat-value {
+    font-size: 1.5rem;
+  }
+  .adm-stat-icon {
+    font-size: 1.6rem;
+  }
+  .adm-chart-wrap {
+    height: 140px;
+  }
+  .adm-act-text {
+    font-size: 0.8rem;
+  }
+  .adm-book-rank {
+    font-size: 0.9rem;
+  }
+  .adm-book-title {
+    font-size: 1rem;
+  }
+  .adm-book-author {
+    font-size: 0.82rem;
+  }
+  .adm-book-count {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .adm-header {
+    padding-left: 2rem;
+  }
+  .adm-slider-wrap {
+    padding-left: 2rem;
+    gap: 0.5rem;
+  }
+  .adm-title {
+    font-size: 1.6rem;
+  }
+  .adm-grid {
+    grid-template-columns: 1fr;
+  }
+  .adm-act-text {
+    font-size: 0.8rem;
+  }
+  .adm-book-rank {
+    font-size: 0.9rem;
+  }
+  .adm-book-title {
+    font-size: 1rem;
+  }
+  .adm-book-author {
+    font-size: 0.82rem;
+  }
+  .adm-book-count {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .adm-header {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .adm-slider-wrap {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .adm-title {
+    font-size: 1.3rem;
+  }
+  .adm-subtitle {
+    font-size: 0.85rem;
+  }
   .adm-stats {
     grid-template-columns: 1fr;
   }
   .adm-grid {
     grid-template-columns: 1fr;
   }
-  .adm-root {
+  .adm-stat-value {
+    font-size: 1.3rem;
+  }
+  .adm-stat-card {
     padding: 1rem;
+  }
+  .adm-chart-wrap {
+    height: 90px;
+  }
+  .adm-act-text {
+    font-size: 0.8rem;
+  }
+  .adm-book-rank {
+    font-size: 0.9rem;
+  }
+  .adm-book-title {
+    font-size: 1rem;
+  }
+  .adm-book-author {
+    font-size: 0.82rem;
+  }
+  .adm-book-count {
+    font-size: 0.82rem;
   }
 }
