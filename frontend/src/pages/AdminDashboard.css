@@ -1,0 +1,450 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap");
+
+.adm-root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-sizing: border-box;
+  color: #3a2a0e;
+}
+
+.adm-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+.adm-title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #2c1a06;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.adm-subtitle {
+  font-size: 0.85rem;
+  color: #7a5a2a;
+  margin: 0;
+  font-style: italic;
+}
+
+.adm-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.adm-viewport {
+  flex: 1;
+  overflow: hidden;
+}
+
+.adm-slide {
+  width: 100%;
+}
+
+@keyframes slideOutFwd {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-50px);
+    opacity: 0;
+  }
+}
+@keyframes slideInFwd {
+  from {
+    transform: translateX(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes slideOutBwd {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(50px);
+    opacity: 0;
+  }
+}
+@keyframes slideInBwd {
+  from {
+    transform: translateX(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-out-forward {
+  animation: slideOutFwd 0.22s ease-in forwards;
+}
+.slide-out-backward {
+  animation: slideOutBwd 0.22s ease-in forwards;
+}
+.slide-in {
+  animation: slideInFwd 0.22s ease-out;
+}
+
+/* Arrows */
+.adm-arrow {
+  background: rgba(245, 232, 190, 0.7);
+  border: 1px solid rgba(140, 100, 40, 0.4);
+  color: #5a3810;
+  font-size: 1rem;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+  backdrop-filter: blur(2px);
+}
+.adm-arrow:hover {
+  background: rgba(140, 100, 40, 0.3);
+}
+.adm-arrow.invisible {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.adm-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: -0.3rem;
+}
+
+.adm-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(140, 100, 40, 0.3);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.adm-dot.active {
+  background: #7a5020;
+}
+
+.adm-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+}
+
+.adm-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: rgba(245, 232, 190, 0.55);
+  border: 1px solid rgba(140, 100, 40, 0.35);
+  border-radius: 6px;
+  padding: 0.9rem 1rem;
+  backdrop-filter: blur(2px);
+}
+
+.adm-stat-icon {
+  font-size: 1.5rem;
+  opacity: 0.8;
+}
+
+.adm-stat-value {
+  font-family: "Playfair Display", serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c1a06;
+  line-height: 1;
+}
+
+.adm-stat-label {
+  font-size: 0.78rem;
+  color: #7a5a2a;
+  margin-top: 0.1rem;
+}
+
+/* ── Panel 1 ────────────────────────────────────────── */
+.adm-panel1 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+/* ── Panel 2 ────────────────────────────────────────── */
+.adm-panel2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.adm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+/* ── Cards ──────────────────────────────────────────── */
+.adm-card {
+  background: rgba(245, 232, 190, 0.5);
+  border: 1px solid rgba(140, 100, 40, 0.3);
+  border-radius: 6px;
+  padding: 0.8rem 1.1rem;
+  backdrop-filter: blur(2px);
+}
+
+.adm-card-title {
+  font-family: "Playfair Display", serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c1a06;
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(140, 100, 40, 0.25);
+}
+
+.adm-chart-wrap {
+  height: 95px;
+  width: 100%;
+}
+
+/* ── Book List ──────────────────────────────────────── */
+.adm-book-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.adm-book-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.32rem 0;
+  border-bottom: 1px solid rgba(140, 100, 40, 0.15);
+}
+.adm-book-item:last-child {
+  border-bottom: none;
+}
+
+.adm-book-rank {
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  color: #8b6914;
+  min-width: 1rem;
+  font-size: 0.85rem;
+}
+.adm-book-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.adm-book-title {
+  font-size: 0.83rem;
+  color: #2c1a06;
+  font-weight: 500;
+}
+.adm-book-author {
+  font-size: 0.72rem;
+  color: #8b6914;
+  font-style: italic;
+}
+.adm-book-count {
+  font-family: "Playfair Display", serif;
+  font-size: 0.83rem;
+  color: #6b4f12;
+  font-weight: 600;
+}
+
+/* ── Activity List ──────────────────────────────────── */
+.adm-activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.adm-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.32rem 0;
+  border-bottom: 1px solid rgba(140, 100, 40, 0.15);
+}
+.adm-activity-item:last-child {
+  border-bottom: none;
+}
+
+.act-icon {
+  font-size: 0.88rem;
+  opacity: 0.75;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+.adm-act-text {
+  flex: 1;
+  font-size: 0.8rem;
+  color: #3a2a0e;
+  line-height: 1.4;
+}
+.adm-act-text strong {
+  color: #2c1a06;
+  font-weight: 600;
+}
+.adm-act-text em {
+  color: #6b4f12;
+  font-style: italic;
+}
+.adm-act-time {
+  font-size: 0.7rem;
+  color: #a08040;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+.adm-footer {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+}
+
+.adm-btn-add {
+  background: transparent;
+  border: 1.5px solid #7a5020;
+  color: #5a3810;
+  font-family: "EB Garamond", serif;
+  font-size: 1rem;
+  padding: 0.45rem 2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+  letter-spacing: 0.03em;
+}
+.adm-btn-add:hover {
+  background: #7a5020;
+  color: #f5e8c8;
+}
+
+/* ── Loading ────────────────────────────────────────── */
+.adm-loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1rem;
+  color: #7a5a2a;
+  font-style: italic;
+}
+
+/* ── Modal ──────────────────────────────────────────── */
+.adm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 15, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.adm-modal {
+  background: #f5e8c0;
+  border: 1.5px solid rgba(140, 100, 40, 0.5);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 420px;
+  max-width: 90vw;
+}
+
+.adm-modal-title {
+  font-family: "Playfair Display", serif;
+  font-size: 1.3rem;
+  color: #2c1a06;
+  margin: 0 0 1.2rem;
+}
+.adm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.adm-form label {
+  font-size: 0.85rem;
+  color: #6b4f12;
+  font-style: italic;
+}
+.adm-form input {
+  border: 1px solid rgba(140, 100, 40, 0.4);
+  background: rgba(245, 232, 190, 0.6);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-family: "EB Garamond", serif;
+  font-size: 1rem;
+  color: #2c1a06;
+  outline: none;
+}
+.adm-form input:focus {
+  border-color: #8b6914;
+}
+.adm-form-error {
+  font-size: 0.85rem;
+  color: #8b2020;
+  margin: 0 0 0.5rem;
+}
+.adm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+.adm-btn-cancel {
+  background: transparent;
+  border: 1px solid rgba(140, 100, 40, 0.4);
+  color: #7a5020;
+  font-family: "EB Garamond", serif;
+  font-size: 0.95rem;
+  padding: 0.45rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.adm-btn-submit {
+  background: #7a5020;
+  border: none;
+  color: #f5e8c8;
+  font-family: "EB Garamond", serif;
+  font-size: 0.95rem;
+  padding: 0.45rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.adm-btn-submit:hover {
+  background: #5a3810;
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 700px) {
+  .adm-stats {
+    grid-template-columns: 1fr;
+  }
+  .adm-grid {
+    grid-template-columns: 1fr;
+  }
+  .adm-root {
+    padding: 1rem;
+  }
+}

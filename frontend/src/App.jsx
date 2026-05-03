@@ -2,33 +2,52 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/UserDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import "./App.css";
 
-/* 
-  Protected route wrapper - checks for JWT token.
-  Replace with your actual auth context later.
-*/
-function PrivateRoute({ children }) {
+function PrivateRoute({ children, adminOnly = false }) {
   const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" replace />;
+  const role = localStorage.getItem("role");
+
+  if (!token) return <Navigate to="/login" replace />;
+  if (adminOnly && role !== "admin")
+    return <Navigate to="/dashboard" replace />;
+  if (!adminOnly && role === "admin") return <Navigate to="/admin" replace />;
+
+  return children;
 }
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        {/* Default redirect */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute adminOnly>
+              <AdminDashboard />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/books"
+          element={
+            <PrivateRoute adminOnly>
+              <AdminDashboard />
             </PrivateRoute>
           }
         />

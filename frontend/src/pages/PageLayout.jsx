@@ -1,4 +1,4 @@
-import bgImage from "../assets/pageBackground.jpg";
+import bgImage from "../assets/pageBackground.jpeg";
 import shelfIcon from "../assets/shelfIcon.png";
 
 export default function PageLayout({ children }) {
@@ -23,7 +23,9 @@ export default function PageLayout({ children }) {
               src={shelfIcon}
               alt="Shelf icon"
               style={s.logoIcon}
-              onError={e => { e.target.style.display = "none"; }}
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
             />
           </div>
 
@@ -47,7 +49,7 @@ const s = {
     backgroundRepeat: "no-repeat",
   },
   leftPanel: {
-    width: "27%",
+    width: "35%",
     flexShrink: 0,
   },
   rightPanel: {
@@ -65,8 +67,8 @@ const s = {
     right: "50px",
   },
   logoIcon: {
-    width: "158px",
-    height: "158px",
+    width: "90px",
+    height: "90px",
     objectFit: "contain",
   },
 };
