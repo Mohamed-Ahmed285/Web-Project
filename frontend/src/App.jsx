@@ -2,37 +2,70 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/UserDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminCatalog from "./pages/AdminCatalog";
+import BookDetails from "./pages/BookDetails";
+import { BookStoreProvider } from "./context/BookStoreContext";
+import "./App.css";
 
-/* 
-  Protected route wrapper - checks for JWT token.
-  Replace with your actual auth context later.
-*/
-function PrivateRoute({ children }) {
+function PrivateRoute({ children, adminOnly = false }) {
   const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" replace />;
+  const role = localStorage.getItem("role");
+
+  // if (!token) return <Navigate to="/login" replace />;
+  // if (adminOnly && role !== "admin")
+  //   return <Navigate to="/dashboard" replace />;
+  // if (!adminOnly && role === "admin") return <Navigate to="/admin" replace />;
+
+  return children;
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <BookStoreProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
 
-        {/* Dashboard */}
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+          <Route
+            path="/book/:id"
+            element={
+              <PrivateRoute>
+                <BookDetails />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute adminOnly>
+                <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin/books"
+            element={
+              <PrivateRoute adminOnly>
+                <AdminCatalog />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </BookStoreProvider>
   );
 }

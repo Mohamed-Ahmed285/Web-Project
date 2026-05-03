@@ -1,6 +1,8 @@
 import { useState } from "react";
+import React from "react";
 import SearchCatalog from "./SearchCatalog";
 import PageLayout from "./PageLayout";
+import { useNavigate } from "react-router-dom";
 
 // ── Sample data ────────────────────────────────────────────────────────────────
 const TOP_BOOKS = [
@@ -10,22 +12,36 @@ const TOP_BOOKS = [
   { id: 4, title: "Atomic Habits", author: "James Clear", cover: "https://covers.openlibrary.org/b/id/10527107-L.jpg" },
   { id: 5, title: "The 5 AM Club", author: "Robin Sharma", cover: "https://covers.openlibrary.org/b/id/8739368-L.jpg" },
   { id: 6, title: "Dune", author: "Frank Herbert", cover: "https://covers.openlibrary.org/b/id/10921787-L.jpg" },
+  { id: 7, title: "To Kill a Mockingbird", author: "Harper Lee", cover: "https://covers.openlibrary.org/b/id/8225261-L.jpg" },
+  { id: 8, title: "Pride and Prejudice", author: "Jane Austen", cover: "https://covers.openlibrary.org/b/id/8091016-L.jpg" },
+  { id: 9, title: "The Catcher in the Rye", author: "J.D. Salinger", cover: "https://covers.openlibrary.org/b/id/8231856-L.jpg" },
+  { id: 10, title: "The Great Gatsby", author: "F. Scott Fitzgerald", cover: "https://covers.openlibrary.org/b/id/7352160-L.jpg" },
+  { id: 11, title: "Brave New World", author: "Aldous Huxley", cover: "https://covers.openlibrary.org/b/id/8775116-L.jpg" },
+  { id: 12, title: "The Lord of the Rings", author: "J.R.R. Tolkien", cover: "https://covers.openlibrary.org/b/id/8231990-L.jpg" },
+  { id: 13, title: "Harry Potter and the Sorcerer's Stone", author: "J.K. Rowling", cover: "https://covers.openlibrary.org/b/id/7984916-L.jpg" },
+  { id: 14, title: "The Book Thief", author: "Markus Zusak", cover: "https://covers.openlibrary.org/b/id/8235081-L.jpg" },
+  { id: 15, title: "The Kite Runner", author: "Khaled Hosseini", cover: "https://covers.openlibrary.org/b/id/8228691-L.jpg" },
+  { id: 16, title: "Sapiens", author: "Yuval Noah Harari", cover: "https://covers.openlibrary.org/b/id/8370226-L.jpg" },
 ];
 
 const COLLECTIONS = [
   { id: 1, name: "Collection 1", books: [TOP_BOOKS[2], TOP_BOOKS[1], TOP_BOOKS[0], TOP_BOOKS[3]] },
   { id: 2, name: "Collection 2", books: [TOP_BOOKS[3], TOP_BOOKS[0]] },
   { id: 3, name: "Collection 3", books: [TOP_BOOKS[4], TOP_BOOKS[5]] },
+  { id: 4, name: "Collection 4", books: [TOP_BOOKS[5], TOP_BOOKS[4]] },
+  { id: 5, name: "Collection 5", books: [TOP_BOOKS[0], TOP_BOOKS[1]] }
 ];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 function BookCard({ book }) {
   const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
   return (
     <div
       style={{ ...s.bookCard, transform: hovered ? "translateY(-6px) scale(1.03)" : "none", transition: "transform 0.25s ease" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(`/book/${book.id}`)}
     >
       <div style={s.coverWrap}>
         <img src={book.cover} alt={book.title} style={s.coverImg} />
@@ -59,19 +75,22 @@ function CollectionCard({ col }) {
   );
 }
 
-function ScrollRow({ children, itemWidth = 160 }) {
-  const [offset, setOffset] = useState(0);
-  const maxOffset = -(Math.max(0, children.length - 4) * (itemWidth + 24));
+function ScrollRow({ children, itemWidth = 160, visibleCount = 4 }) {
+  const [index, setIndex] = useState(0);
+  const items = React.Children.toArray(children);
+  const total = items.length;
 
-  const prev = () => setOffset(o => Math.min(0, o + (itemWidth + 24)));
-  const next = () => setOffset(o => Math.max(maxOffset, o - (itemWidth + 24)));
+  const prev = () => setIndex(i => (i - 1 + total) % total);
+  const next = () => setIndex(i => (i + 1) % total);
+
+  const visible = Array.from({ length: Math.min(visibleCount, total) }, (_, k) => items[(index + k) % total]);
 
   return (
     <div style={s.rowOuter}>
       <button style={s.arrowBtn} onClick={prev}>&#8249;</button>
       <div style={s.rowViewport}>
-        <div style={{ ...s.rowTrack, transform: `translateX(${offset}px)`, transition: "transform 0.35s cubic-bezier(.4,0,.2,1)" }}>
-          {children}
+        <div style={s.rowTrack}>
+          {visible}
         </div>
       </div>
       <button style={s.arrowBtn} onClick={next}>&#8250;</button>
@@ -95,21 +114,22 @@ export default function UserDashboard() {
 
       {/* Search */}
       <div style={s.searchRow}>
-        <SearchCatalog onSearch={(q) => console.log("Search:", q)} />
+        <SearchCatalog books={TOP_BOOKS} onSearch={(q, results) => console.log("Search:", q, results)} />
       </div>
 
       {/* Top Books */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>Top Books</h2>
-        <ScrollRow itemWidth={140}>
+        <ScrollRow itemWidth={140} visibleCount={7}>
           {TOP_BOOKS.map(b => <BookCard key={b.id} book={b} />)}
         </ScrollRow>
+
       </section>
 
       {/* My Collections */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>My Collections</h2>
-        <ScrollRow itemWidth={260}>
+        <ScrollRow itemWidth={260} visibleCount={4}>
           {COLLECTIONS.map(c => <CollectionCard key={c.id} col={c} />)}
         </ScrollRow>
       </section>
@@ -165,7 +185,6 @@ const s = {
   rowTrack: {
     display: "flex",
     gap: "24px",
-    willChange: "transform",
   },
   arrowBtn: {
     background: "rgba(255,255,255,0.25)",

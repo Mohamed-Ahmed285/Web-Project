@@ -1,0 +1,407 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@600;700&display=swap');
+
+/* ── Wrapper ── */
+.bd-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-bottom: 40px;
+}
+
+/* ── Back Button ── */
+.bd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 248, 230, 0.35);
+  border: 1.5px solid rgba(101, 67, 33, 0.45);
+  border-radius: 30px;
+  padding: 8px 22px;
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a2e0a;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: background 0.2s, transform 0.15s;
+  width: fit-content;
+  backdrop-filter: blur(4px);
+}
+.bd-back-btn:hover {
+  background: rgba(255, 248, 230, 0.55);
+  transform: translateX(-3px);
+}
+.bd-back-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ── Hero card ── */
+.bd-hero {
+  display: flex;
+  gap: 36px;
+  background: rgba(255, 248, 230, 0.22);
+  border: 1.5px solid rgba(101, 67, 33, 0.3);
+  border-radius: 18px;
+  padding: 32px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 6px 28px rgba(50, 25, 5, 0.18);
+}
+
+.bd-cover-wrap {
+  flex-shrink: 0;
+  width: 150px;
+  height: 210px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 6px 10px 28px rgba(50, 25, 5, 0.55);
+  border: 2px solid rgba(101, 67, 33, 0.35);
+}
+.bd-cover-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bd-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bd-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(18px, 2.5vw, 26px);
+  font-weight: 700;
+  color: #2c1a07;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+.bd-author {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 16px;
+  color: #6b4c22;
+  font-style: italic;
+}
+
+.bd-genre-badge {
+  display: inline-block;
+  background: rgba(101, 67, 33, 0.12);
+  border: 1px solid rgba(101, 67, 33, 0.3);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-family: 'Cinzel', serif;
+  color: #4a2e0a;
+  letter-spacing: 0.06em;
+  width: fit-content;
+}
+
+.bd-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bd-stars-display {
+  display: flex;
+  gap: 3px;
+}
+.bd-stars-display .star {
+  font-size: 18px;
+  color: #c8a84b;
+}
+.bd-stars-display .star.empty {
+  color: rgba(101, 67, 33, 0.25);
+}
+.bd-rating-num {
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2c1a07;
+}
+.bd-reviews-count {
+  font-size: 13px;
+  color: #7a5c2e;
+  font-family: 'EB Garamond', serif;
+}
+
+.bd-description {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #3b2a14;
+  margin-top: 4px;
+}
+
+/* ── Details grid ── */
+.bd-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+.bd-detail-cell {
+  background: rgba(255, 248, 230, 0.22);
+  border: 1px solid rgba(101, 67, 33, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backdrop-filter: blur(2px);
+}
+.bd-detail-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #9a7a4a;
+  text-transform: uppercase;
+}
+.bd-detail-value {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 15px;
+  color: #2c1a07;
+  font-weight: 600;
+}
+
+/* ── Section heading ── */
+.bd-section-heading {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c1a07;
+  letter-spacing: 0.06em;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(101, 67, 33, 0.2);
+  margin-bottom: 4px;
+}
+
+/* ── Actions panel ── */
+.bd-actions-panel {
+  background: rgba(255, 248, 230, 0.22);
+  border: 1.5px solid rgba(101, 67, 33, 0.3);
+  border-radius: 16px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  backdrop-filter: blur(4px);
+}
+
+/* Reading status */
+.bd-status-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bd-status-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  border: 1.5px solid rgba(101, 67, 33, 0.4);
+  background: rgba(255, 248, 230, 0.3);
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a2e0a;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  text-align: center;
+  white-space: nowrap;
+}
+.bd-status-btn:hover {
+  background: rgba(101, 67, 33, 0.12);
+}
+.bd-status-btn.active {
+  background: rgba(101, 67, 33, 0.85);
+  border-color: rgba(101, 67, 33, 0.9);
+  color: #fff8e6;
+}
+
+/* Star rating input */
+.bd-user-stars {
+  display: flex;
+  gap: 6px;
+}
+.bd-user-stars button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 26px;
+  color: rgba(101, 67, 33, 0.25);
+  padding: 0;
+  transition: transform 0.15s, color 0.15s;
+  line-height: 1;
+}
+.bd-user-stars button.filled {
+  color: #c8a84b;
+}
+.bd-user-stars button:hover {
+  transform: scale(1.2);
+  color: #c8a84b;
+}
+
+/* Review */
+.bd-review-textarea {
+  width: 100%;
+  min-height: 90px;
+  background: rgba(255, 248, 230, 0.4);
+  border: 1.5px solid rgba(101, 67, 33, 0.35);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 15px;
+  color: #2c1a07;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.bd-review-textarea:focus {
+  border-color: rgba(101, 67, 33, 0.7);
+}
+.bd-review-textarea::placeholder {
+  color: #9a7a4a;
+  font-style: italic;
+}
+.bd-review-submit-btn {
+  align-self: flex-end;
+  padding: 9px 28px;
+  background: rgba(101, 67, 33, 0.82);
+  border: none;
+  border-radius: 30px;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff8e6;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.bd-review-submit-btn:hover {
+  background: rgba(80, 45, 10, 0.92);
+  transform: translateY(-1px);
+}
+
+/* ── Saved reviews list ── */
+.bd-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.bd-review-card {
+  background: rgba(255, 248, 230, 0.22);
+  border: 1px solid rgba(101, 67, 33, 0.22);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  backdrop-filter: blur(2px);
+}
+.bd-review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bd-review-user {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2c1a07;
+}
+.bd-review-mini-stars {
+  display: flex;
+  gap: 2px;
+  font-size: 13px;
+}
+.bd-review-mini-stars .star { color: #c8a84b; }
+.bd-review-mini-stars .star.empty { color: rgba(101,67,33,0.25); }
+.bd-review-date {
+  font-size: 12px;
+  color: #9a7a4a;
+  font-family: 'EB Garamond', serif;
+  margin-left: auto;
+}
+.bd-review-text {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 15px;
+  color: #3b2a14;
+  line-height: 1.65;
+}
+.bd-no-reviews {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 14px;
+  color: #9a7a4a;
+  font-style: italic;
+}
+
+/* ── Related books ── */
+.bd-related-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.bd-related-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  width: 110px;
+  transition: transform 0.2s;
+}
+.bd-related-card:hover {
+  transform: translateY(-5px);
+}
+.bd-related-cover {
+  width: 90px;
+  height: 128px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 4px 6px 16px rgba(50, 25, 5, 0.45);
+  border: 1.5px solid rgba(101, 67, 33, 0.3);
+}
+.bd-related-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bd-related-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2c1a07;
+  text-align: center;
+  line-height: 1.3;
+}
+.bd-related-author {
+  font-size: 11px;
+  color: #7a5c2e;
+  text-align: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 680px) {
+  .bd-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 22px 18px;
+  }
+  .bd-genre-badge,
+  .bd-rating-row {
+    justify-content: center;
+  }
+  .bd-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .bd-actions-panel {
+    padding: 18px;
+  }
+}
