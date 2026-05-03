@@ -1,0 +1,72 @@
+import bgImage from "../assets/pageBackground.jpeg";
+import shelfIcon from "../assets/shelfIcon.png";
+
+export default function PageLayout({ children }) {
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #1a1008; }
+        ::-webkit-scrollbar { display: none; }
+      `}</style>
+
+      <div style={s.page}>
+        {/* Left decorative panel */}
+        <div style={s.leftPanel} />
+
+        {/* Right content panel */}
+        <div style={s.rightPanel}>
+          {/* Logo — always pinned top-right */}
+          <div style={s.logoArea}>
+            <img
+              src={shelfIcon}
+              alt="Shelf icon"
+              style={s.logoIcon}
+              onError={e => { e.target.style.display = "none"; }}
+            />
+          </div>
+
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
+const s = {
+  page: {
+    display: "flex",
+    width: "100vw",
+    height: "100vh",
+    overflow: "hidden",
+    fontFamily: "'EB Garamond', Georgia, serif",
+    backgroundImage: `url(${bgImage})`,
+    backgroundSize: "103% 103%",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  },
+  leftPanel: {
+    width: "35%",
+    flexShrink: 0,
+  },
+  rightPanel: {
+    flex: 1,
+    overflowY: "auto",
+    padding: "40px 48px 40px 0px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "28px",
+    position: "relative",
+  },
+  logoArea: {
+    position: "absolute",
+    top: "25px",
+    right: "50px",
+  },
+  logoIcon: {
+    width: "158px",
+    height: "158px",
+    objectFit: "contain",
+  },
+};

@@ -35,26 +35,32 @@ export default function Register() {
         .required("Gender is required"),
     }),
     onSubmit: async (values) => {
+      // setIsLoading(true);
+      // setServerError("");
+      // try {
+      //   const { confirmPassword, ...payload } = values;
+      //   const response = await fetch("/api/auth/register", {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(payload),
+      //   });
+      //   const data = await response.json();
+      //   if (!response.ok) {
+      //     setServerError(data.message || "Registration failed.");
+      //   } else {
+      //     navigate("/login");
+      //   }
+      // } catch {
+      //   setServerError("Network error. Please try again.");
+      // } finally {
+      //   setIsLoading(false);
+      // }
       setIsLoading(true);
-      setServerError("");
-      try {
-        const { confirmPassword, ...payload } = values;
-        const response = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          setServerError(data.message || "Registration failed.");
-        } else {
-          navigate("/login");
-        }
-      } catch {
-        setServerError("Network error. Please try again.");
-      } finally {
+      // TEMP: mock register — remove when backend is ready
+      setTimeout(() => {
+        navigate("/login");
         setIsLoading(false);
-      }
+      }, 800);
     },
   });
 
@@ -90,8 +96,8 @@ export default function Register() {
                   value={formik.values.firstName}
                   placeholder={
                     formik.touched.firstName &&
-                    formik.errors.firstName &&
-                    !formik.values.firstName
+                      formik.errors.firstName &&
+                      !formik.values.firstName
                       ? formik.errors.firstName
                       : "John"
                   }
@@ -112,8 +118,8 @@ export default function Register() {
                   value={formik.values.secondName}
                   placeholder={
                     formik.touched.secondName &&
-                    formik.errors.secondName &&
-                    !formik.values.secondName
+                      formik.errors.secondName &&
+                      !formik.values.secondName
                       ? formik.errors.secondName
                       : "Doe"
                   }
@@ -134,8 +140,8 @@ export default function Register() {
                 value={formik.values.email}
                 placeholder={
                   formik.touched.email &&
-                  formik.errors.email &&
-                  !formik.values.email
+                    formik.errors.email &&
+                    !formik.values.email
                     ? formik.errors.email
                     : "your@email.com"
                 }
@@ -197,8 +203,8 @@ export default function Register() {
                 value={formik.values.password}
                 placeholder={
                   formik.touched.password &&
-                  formik.errors.password &&
-                  !formik.values.password
+                    formik.errors.password &&
+                    !formik.values.password
                     ? formik.errors.password
                     : "••••••••"
                 }
@@ -280,8 +286,8 @@ export default function Register() {
                 value={formik.values.confirmPassword}
                 placeholder={
                   formik.touched.confirmPassword &&
-                  formik.errors.confirmPassword &&
-                  !formik.values.confirmPassword
+                    formik.errors.confirmPassword &&
+                    !formik.values.confirmPassword
                     ? formik.errors.confirmPassword
                     : "••••••••"
                 }

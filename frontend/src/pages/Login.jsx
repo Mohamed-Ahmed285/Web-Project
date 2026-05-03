@@ -19,26 +19,33 @@ export default function Login() {
         .required("Password is required"),
     }),
     onSubmit: async (values) => {
+      // setIsLoading(true);
+      // setServerError("");
+      // try {
+      //   const response = await fetch("/api/auth/login", {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(values),
+      //   });
+      //   const data = await response.json();
+      //   if (!response.ok) {
+      //     setServerError(data.message || "Login failed.");
+      //   } else {
+      //     localStorage.setItem("token", data.token);
+      //     navigate("/dashboard");
+      //   }
+      // } catch {
+      //   setServerError("Network error. Please try again.");
+      // } finally {
+      //   setIsLoading(false);
+      // }
       setIsLoading(true);
-      setServerError("");
-      try {
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          setServerError(data.message || "Login failed.");
-        } else {
-          localStorage.setItem("token", data.token);
-          navigate("/dashboard");
-        }
-      } catch {
-        setServerError("Network error. Please try again.");
-      } finally {
+      // TEMP: mock login — remove when backend is ready
+      setTimeout(() => {
+        localStorage.setItem("token", "mock-token");
+        navigate("/dashboard");
         setIsLoading(false);
-      }
+      }, 800);
     },
   });
 
@@ -73,8 +80,8 @@ export default function Login() {
                 value={formik.values.email}
                 placeholder={
                   formik.touched.email &&
-                  formik.errors.email &&
-                  !formik.values.email
+                    formik.errors.email &&
+                    !formik.values.email
                     ? formik.errors.email
                     : "your@email.com"
                 }
@@ -100,8 +107,8 @@ export default function Login() {
                 value={formik.values.password}
                 placeholder={
                   formik.touched.password &&
-                  formik.errors.password &&
-                  !formik.values.password
+                    formik.errors.password &&
+                    !formik.values.password
                     ? formik.errors.password
                     : "••••••••"
                 }

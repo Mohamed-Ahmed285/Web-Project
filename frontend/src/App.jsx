@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Dashboard from "./pages/UserDashboard";
 
 /* 
   Protected route wrapper - checks for JWT token.
@@ -22,14 +23,12 @@ export default function App() {
         {/* Default redirect */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Protected placeholder - add your dashboard later */}
+        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
             <PrivateRoute>
-              <div style={{ padding: "2rem", fontFamily: "serif" }}>
-                <h1>Dashboard - coming soon</h1>
-              </div>
+              <Dashboard />
             </PrivateRoute>
           }
         />
