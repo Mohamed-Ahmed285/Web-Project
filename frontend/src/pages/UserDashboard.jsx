@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import SearchCatalog from "./SearchCatalog";
 import PageLayout from "./PageLayout";
 
@@ -16,6 +17,8 @@ const COLLECTIONS = [
   { id: 1, name: "Collection 1", books: [TOP_BOOKS[2], TOP_BOOKS[1], TOP_BOOKS[0], TOP_BOOKS[3]] },
   { id: 2, name: "Collection 2", books: [TOP_BOOKS[3], TOP_BOOKS[0]] },
   { id: 3, name: "Collection 3", books: [TOP_BOOKS[4], TOP_BOOKS[5]] },
+  { id: 4, name: "Collection 4", books: [TOP_BOOKS[5], TOP_BOOKS[4]] },
+  { id: 5, name: "Collection 5", books: [TOP_BOOKS[0], TOP_BOOKS[1]] }
 ];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -59,19 +62,22 @@ function CollectionCard({ col }) {
   );
 }
 
-function ScrollRow({ children, itemWidth = 160 }) {
-  const [offset, setOffset] = useState(0);
-  const maxOffset = -(Math.max(0, children.length - 4) * (itemWidth + 24));
+function ScrollRow({ children, itemWidth = 160, visibleCount = 4 }) {
+  const [index, setIndex] = useState(0);
+  const items = React.Children.toArray(children);
+  const total = items.length;
 
-  const prev = () => setOffset(o => Math.min(0, o + (itemWidth + 24)));
-  const next = () => setOffset(o => Math.max(maxOffset, o - (itemWidth + 24)));
+  const prev = () => setIndex(i => (i - 1 + total) % total);
+  const next = () => setIndex(i => (i + 1) % total);
+
+  const visible = Array.from({ length: Math.min(visibleCount, total) }, (_, k) => items[(index + k) % total]);
 
   return (
     <div style={s.rowOuter}>
       <button style={s.arrowBtn} onClick={prev}>&#8249;</button>
       <div style={s.rowViewport}>
-        <div style={{ ...s.rowTrack, transform: `translateX(${offset}px)`, transition: "transform 0.35s cubic-bezier(.4,0,.2,1)" }}>
-          {children}
+        <div style={s.rowTrack}>
+          {visible}
         </div>
       </div>
       <button style={s.arrowBtn} onClick={next}>&#8250;</button>
@@ -101,15 +107,16 @@ export default function UserDashboard() {
       {/* Top Books */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>Top Books</h2>
-        <ScrollRow itemWidth={140}>
+        <ScrollRow itemWidth={140} visibleCount={6}>
           {TOP_BOOKS.map(b => <BookCard key={b.id} book={b} />)}
         </ScrollRow>
+
       </section>
 
       {/* My Collections */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>My Collections</h2>
-        <ScrollRow itemWidth={260}>
+        <ScrollRow itemWidth={260} visibleCount={3}>
           {COLLECTIONS.map(c => <CollectionCard key={c.id} col={c} />)}
         </ScrollRow>
       </section>
@@ -165,7 +172,6 @@ const s = {
   rowTrack: {
     display: "flex",
     gap: "24px",
-    willChange: "transform",
   },
   arrowBtn: {
     background: "rgba(255,255,255,0.25)",
