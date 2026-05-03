@@ -38,7 +38,7 @@ export default function Register() {
       setIsLoading(true);
       setServerError("");
       try {
-        const { confirmPassword, ...payload } = values;
+        const {...payload } = values;
         const response = await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -47,8 +47,9 @@ export default function Register() {
         const data = await response.json();
         if (!response.ok) {
           setServerError(data.message || "Registration failed.");
-        } else {
-          navigate("/login");
+        } else{
+          localStorage.setItem("token", data.token);
+          navigate("/dashboard");
         }
       } catch {
         setServerError("Network error. Please try again.");
