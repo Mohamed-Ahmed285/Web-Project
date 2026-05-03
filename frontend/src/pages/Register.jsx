@@ -56,9 +56,24 @@ export default function Register() {
       //   setIsLoading(false);
       // }
       setIsLoading(true);
-      // TEMP: mock register — remove when backend is ready
-      setTimeout(() => {
-        navigate("/login");
+      setServerError("");
+      try {
+        const {...payload } = values;
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          setServerError(data.message || "Registration failed.");
+        } else{
+          localStorage.setItem("token", data.token);
+          navigate("/dashboard");
+        }
+      } catch {
+        setServerError("Network error. Please try again.");
+      } finally {
         setIsLoading(false);
       }, 800);
     },
