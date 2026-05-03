@@ -75,7 +75,7 @@ export default function Register() {
         setServerError("Network error. Please try again.");
       } finally {
         setIsLoading(false);
-      }, 800);
+      } 800;
     },
   });
 
