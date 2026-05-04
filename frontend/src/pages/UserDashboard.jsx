@@ -3,6 +3,8 @@ import React from "react";
 import SearchCatalog from "./SearchCatalog";
 import PageLayout from "./PageLayout";
 import { useNavigate } from "react-router-dom";
+import { COLLECTIONS } from "./CollectionView";
+import { useBookStore } from "../context/BookStoreContext";
 
 // ── Sample data ────────────────────────────────────────────────────────────────
 const TOP_BOOKS = [
@@ -22,14 +24,6 @@ const TOP_BOOKS = [
   { id: 14, title: "The Book Thief", author: "Markus Zusak", cover: "https://covers.openlibrary.org/b/id/8235081-L.jpg" },
   { id: 15, title: "The Kite Runner", author: "Khaled Hosseini", cover: "https://covers.openlibrary.org/b/id/8228691-L.jpg" },
   { id: 16, title: "Sapiens", author: "Yuval Noah Harari", cover: "https://covers.openlibrary.org/b/id/8370226-L.jpg" },
-];
-
-const COLLECTIONS = [
-  { id: 1, name: "Collection 1", books: [TOP_BOOKS[2], TOP_BOOKS[1], TOP_BOOKS[0], TOP_BOOKS[3]] },
-  { id: 2, name: "Collection 2", books: [TOP_BOOKS[3], TOP_BOOKS[0]] },
-  { id: 3, name: "Collection 3", books: [TOP_BOOKS[4], TOP_BOOKS[5]] },
-  { id: 4, name: "Collection 4", books: [TOP_BOOKS[5], TOP_BOOKS[4]] },
-  { id: 5, name: "Collection 5", books: [TOP_BOOKS[0], TOP_BOOKS[1]] }
 ];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -53,8 +47,22 @@ function BookCard({ book }) {
 }
 
 function CollectionCard({ col }) {
+  const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
   return (
-    <div style={s.collCard}>
+    <div
+      style={{
+        ...s.collCard,
+        transform: hovered ? "translateY(-5px) scale(1.02)" : "none",
+        boxShadow: hovered
+          ? "0 10px 28px rgba(50,25,5,0.30)"
+          : "0 4px 16px rgba(50,25,5,0.15)",
+        borderColor: hovered ? "rgba(101,67,33,0.6)" : "rgba(101,67,33,0.35)",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(`/collection/${col.id}`)}
+    >
       <div style={s.collCovers}>
         {col.books.slice(0, 2).map((b, i) => (
           <img
@@ -101,6 +109,7 @@ function ScrollRow({ children, itemWidth = 160, visibleCount = 4 }) {
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function UserDashboard() {
   const userName = "John";
+  const { collections } = useBookStore();
 
   return (
     <PageLayout>
@@ -130,7 +139,7 @@ export default function UserDashboard() {
       <section style={s.section}>
         <h2 style={s.sectionTitle}>My Collections</h2>
         <ScrollRow itemWidth={260} visibleCount={4}>
-          {COLLECTIONS.map(c => <CollectionCard key={c.id} col={c} />)}
+          {collections.map(c => <CollectionCard key={c.id} col={c} />)}
         </ScrollRow>
       </section>
     </PageLayout>
@@ -250,6 +259,7 @@ const s = {
     cursor: "pointer",
     backdropFilter: "blur(2px)",
     boxShadow: "0 4px 16px rgba(50,25,5,0.15)",
+    transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
   },
   collCovers: {
     position: "relative",

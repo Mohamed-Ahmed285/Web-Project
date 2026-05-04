@@ -5,6 +5,7 @@ import Dashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCatalog from "./pages/AdminCatalog";
 import BookDetails from "./pages/BookDetails";
+import CollectionView from "./pages/CollectionView";
 import { BookStoreProvider } from "./context/BookStoreContext";
 import "./App.css";
 
@@ -43,6 +44,15 @@ export default function App() {
             element={
               <PrivateRoute>
                 <BookDetails />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/collection/:id"
+            element={
+              <PrivateRoute>
+                <CollectionView />
               </PrivateRoute>
             }
           />
