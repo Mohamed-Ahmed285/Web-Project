@@ -1,20 +1,6 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import { TOP_BOOKS } from "../data/books";
-
-/**
- * BookStoreContext
- * ─────────────────
- * Holds ALL per-book user data in a single map keyed by book id.
- * Shape of each entry:
- *   bookStore[id] = {
- *     readingStatus : null | "read" | "reading" | "want",
- *     userRating    : 0–5,
- *     reviews       : [{ id, user, text, rating, date }, …],
- *   }
- *
- * Derived values (avgRating, totalReviewCount) are computed on the fly
- * so the hero section always shows live numbers.
- */
+import { COLLECTIONS as INITIAL_COLLECTIONS } from "../pages/CollectionView";
 
 const BookStoreContext = createContext(null);
 
@@ -24,13 +10,65 @@ function makeDefault() {
 
 export function BookStoreProvider({ children }) {
   const [bookStore, setBookStore] = useState(() => {
-    // Pre-populate with empty entries for every book
     const init = {};
     TOP_BOOKS.forEach((b) => { init[b.id] = makeDefault(); });
     return init;
   });
 
-  /** Get the store entry for a single book (always returns an object) */
+  /** Collections – live mutable copy seeded from static data */
+  const [collections, setCollections] = useState(() =>
+    INITIAL_COLLECTIONS.map((c) => ({ ...c, books: [...c.books] }))
+  );
+
+  /**
+   * Add a book to an existing collection.
+   * Returns "added" | "duplicate".
+   */
+  const addBookToCollection = useCallback((collectionId, book) => {
+    let result = "duplicate";
+    setCollections((prev) =>
+      prev.map((c) => {
+        if (c.id !== collectionId) return c;
+        if (c.books.some((b) => b.id === book.id)) return c;
+        result = "added";
+        return { ...c, books: [...c.books, book] };
+      })
+    );
+    return result;
+  }, []);
+
+  /**
+   * Create a brand-new collection, optionally seeded with one book.
+   * Returns { status: "created", collection } | { status: "duplicate_name" }
+   */
+  const createCollection = useCallback((name, seedBook = null) => {
+    const trimmed = name.trim();
+
+    // Check for duplicate name against current snapshot before mutating
+    // We read collections via the functional updater pattern so we always
+    // work against the latest state without needing it as a dep.
+    let resultStatus = "duplicate_name";
+    let createdCollection = null;
+
+    setCollections((prev) => {
+      const nameTaken = prev.some(
+        (c) => c.name.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (nameTaken) return prev;               // no mutation
+      createdCollection = {
+        id: Date.now(),
+        name: trimmed,
+        books: seedBook ? [seedBook] : [],
+      };
+      resultStatus = "created";
+      return [...prev, createdCollection];
+    });
+
+    if (resultStatus !== "created") return { status: "duplicate_name" };
+    return { status: "created", collection: createdCollection };
+  }, []);
+
+  /** Get the store entry for a single book */
   const getBook = useCallback(
     (id) => bookStore[id] ?? makeDefault(),
     [bookStore]
@@ -48,39 +86,25 @@ export function BookStoreProvider({ children }) {
   const addReview = useCallback((id, review) => {
     setBookStore((prev) => {
       const entry = prev[id] ?? makeDefault();
-      return {
-        ...prev,
-        [id]: { ...entry, reviews: [review, ...entry.reviews] },
-      };
+      return { ...prev, [id]: { ...entry, reviews: [review, ...entry.reviews] } };
     });
   }, []);
 
-  /**
-   * Compute live average rating for a book.
-   * Combines the static base rating with all user-submitted ratings.
-   */
   const getAvgRating = useCallback(
     (bookId) => {
       const staticBook = TOP_BOOKS.find((b) => b.id === bookId);
       if (!staticBook) return 0;
-
       const entry = bookStore[bookId] ?? makeDefault();
-      const userRatings = entry.reviews
-        .map((r) => r.rating)
-        .filter((r) => r > 0);
-
+      const userRatings = entry.reviews.map((r) => r.rating).filter((r) => r > 0);
       if (userRatings.length === 0) return staticBook.rating;
-
-      // Weighted blend: static rating counts as N votes, user ratings each count as 1
       const baseWeight = staticBook.reviewsCount;
-      const userSum    = userRatings.reduce((a, b) => a + b, 0);
+      const userSum = userRatings.reduce((a, b) => a + b, 0);
       const totalVotes = baseWeight + userRatings.length;
       return Math.round(((staticBook.rating * baseWeight + userSum) / totalVotes) * 10) / 10;
     },
     [bookStore]
   );
 
-  /** Total review count = static base + user-submitted */
   const getTotalReviews = useCallback(
     (bookId) => {
       const staticBook = TOP_BOOKS.find((b) => b.id === bookId);
@@ -92,7 +116,12 @@ export function BookStoreProvider({ children }) {
   );
 
   return (
-    <BookStoreContext.Provider value={{ getBook, patchBook, addReview, getAvgRating, getTotalReviews }}>
+    <BookStoreContext.Provider
+      value={{
+        getBook, patchBook, addReview, getAvgRating, getTotalReviews,
+        collections, addBookToCollection, createCollection,
+      }}
+    >
       {children}
     </BookStoreContext.Provider>
   );
