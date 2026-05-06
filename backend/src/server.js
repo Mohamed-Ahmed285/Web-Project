@@ -4,6 +4,8 @@ import connectDB from "./config/db.js";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import bookRoutes from "./routes/bookRoutes.js";
+import collectionRoutes from "./routes/collectionRoutes.js";
 
 dotenv.config();
 
@@ -22,6 +24,9 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/books", bookRoutes);
+app.use("/api/collections", collectionRoutes);
+
 
 app.get("/", (req, res) => {
   res.status(200).send("Book Tracker API is running smoothly!");

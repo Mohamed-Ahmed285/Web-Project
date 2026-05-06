@@ -19,33 +19,33 @@ export default function Login() {
         .required("Password is required"),
     }),
     onSubmit: async (values) => {
-      // setIsLoading(true);
-      // setServerError("");
-      // try {
-      //   const response = await fetch("/api/auth/login", {
-      //     method: "POST",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify(values),
-      //   });
-      //   const data = await response.json();
-      //   if (!response.ok) {
-      //     setServerError(data.message || "Login failed.");
-      //   } else {
-      //     localStorage.setItem("token", data.token);
-      //     navigate("/dashboard");
-      //   }
-      // } catch {
-      //   setServerError("Network error. Please try again.");
-      // } finally {
-      //   setIsLoading(false);
-      // }
       setIsLoading(true);
-      // TEMP: mock login — remove when backend is ready
-      setTimeout(() => {
-        localStorage.setItem("token", "mock-token");
-        navigate("/dashboard");
+      setServerError("");
+      try {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          setServerError(data.message || "Login failed.");
+        } else {
+          localStorage.setItem("token", data.token);
+          navigate("/dashboard");
+        }
+      } catch {
+        setServerError("Network error. Please try again.");
+      } finally {
         setIsLoading(false);
-      }, 800);
+      }
+      // setIsLoading(true);
+      // // TEMP: mock login — remove when backend is ready
+      // setTimeout(() => {
+      //   localStorage.setItem("token", "mock-token");
+      //   navigate("/dashboard");
+      //   setIsLoading(false);
+      // }, 800);
     },
   });
 
