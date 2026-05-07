@@ -134,8 +134,22 @@ export default function UserDashboard() {
 
     fetchDashboardData();
   }, []);
+
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <PageLayout>
+        <div style={s.loadingWrapper}>
+          <style>{`
+            @keyframes ud-spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div style={s.spinner} />
+          <p style={s.loadingText}>Loading your dashboard...</p>
+        </div>
+      </PageLayout>
+    );
   }
 
   return (
@@ -221,10 +235,14 @@ const s = {
     letterSpacing: "0.02em",
   },
   logoutBtn: {
-    background: "#8b3e2f",
-    border: "none",
+    background: "#8b1a1a",
+    color: "#f5e6c8",
+    // font-family: "Playfair Display, serif",
+    // background: "#8b3e2f",
+    // border: "none",
     borderRadius: "12px",
-    color: "#fff",
+    border: "2px solid #6b1010",
+    // color: "#fff",
     fontWeight: 600,
     padding: "12px 18px",
     cursor: "pointer",
@@ -238,6 +256,31 @@ const s = {
   },
   searchRow: {
     display: "flex",
+  },
+  loadingWrapper: {
+    minHeight: "calc(100vh - 80px)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "22px",
+    color: "#f5e4b9",
+    textAlign: "center",
+  },
+  spinner: {
+    width: "80px",
+    height: "80px",
+    borderRadius: "50%",
+    border: "8px solid #d0b17a",
+    borderTopColor: "#26160b",
+    animation: "ud-spin 1s linear infinite",
+    boxShadow: "0 0 0 5px rgba(255, 255, 255, 0.03), inset 0 0 0 1px rgba(255,255,255,0.15)",
+  },
+  loadingText: {
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "16px",
+    color: "#26160b",
+    maxWidth: "320px",
   },
   sectionHeader: {
     display: "flex",

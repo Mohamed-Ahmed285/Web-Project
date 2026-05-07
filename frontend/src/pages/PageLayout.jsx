@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import bgImage from "../assets/pageBackground.jpg";
 import shelfIcon from "../assets/shelfIcon.png";
 
 export default function PageLayout({ children }) {
+  const navigate = useNavigate();
+
   return (
     <>
       <style>{`
@@ -18,7 +21,13 @@ export default function PageLayout({ children }) {
         {/* Right content panel */}
         <div style={s.rightPanel}>
           {/* Logo — always pinned top-right */}
-          <div style={s.logoArea}>
+          <button
+            style={s.logoArea}
+            onClick={() => {
+              const role = localStorage.getItem("role");
+              navigate(role === "admin" ? "/admin" : "/dashboard");
+            }}
+          >
             <img
               src={shelfIcon}
               alt="Shelf icon"
@@ -27,7 +36,7 @@ export default function PageLayout({ children }) {
                 e.target.style.display = "none";
               }}
             />
-          </div>
+          </button>
 
           {children}
         </div>
@@ -62,6 +71,14 @@ const s = {
     position: "relative",
   },
   logoArea: {
+  background: "none",
+  border: "none",
+  padding: "0",
+  margin: "0",
+  cursor: "pointer",
+  outline: "inherit",
+  font: "inherit",
+  color: "inherit",
   position: "absolute",
   top: "5px",
   right: "50px",
