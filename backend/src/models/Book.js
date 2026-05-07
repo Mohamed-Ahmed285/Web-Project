@@ -18,6 +18,14 @@ const bookSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Published year is required"],
     },
+    language: {
+      type: String,
+      required: [true, "Language is required"],
+    },
+    description: {
+      type: String,
+      required: [true, "Description is required"],
+    },
     categories: {
       type: [String],
       required: [true, "At least one category is required"],

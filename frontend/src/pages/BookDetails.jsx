@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, redirect } from "react-router-dom";
 import PageLayout from "./PageLayout";
 import { TOP_BOOKS } from "../data/books";
 import { useBookStore } from "../context/BookStoreContext";
@@ -14,7 +14,11 @@ function StarsDisplay({ rating, size = 18 }) {
       {Array.from({ length: 5 }, (_, i) => {
         const filled = i < full || (i === full && half);
         return (
-          <span key={i} className={`star${filled ? "" : " empty"}`} style={{ fontSize: size }}>
+          <span
+            key={i}
+            className={`star${filled ? "" : " empty"}`}
+            style={{ fontSize: size }}
+          >
             {filled ? "★" : "☆"}
           </span>
         );
@@ -47,26 +51,63 @@ function StarRatingInput({ value, onChange }) {
 // ── Add-to-Collection Modal ───────────────────────────────────────────────────
 // view: "list" → browse & pick existing  |  "create" → name + instant-add
 function AddToCollectionModal({ book, onClose }) {
-  const { collections, addBookToCollection, createCollection } = useBookStore();
+  const { addBookToCollection, createCollection } = useBookStore();
+
+  const [collections, setCollections] = useState([]);
+  const [isFetching, setIsFetching] = useState(true);
 
   /* ── shared ── */
   const overlayRef = useRef(null);
-  const [view, setView]         = useState("list");   // "list" | "create"
-  const [toast, setToast]       = useState(null);     // { type, msg } — floats above everything
+  const [view, setView] = useState("list"); // "list" | "create"
+  const [toast, setToast] = useState(null); // { type, msg } — floats above everything
 
   /* ── list-view state ── */
   const [selected, setSelected] = useState(null);
   const [listBusy, setListBusy] = useState(false);
 
   /* ── create-view state ── */
-  const [newName, setNewName]       = useState("");
-  const [nameError, setNameError]   = useState("");
+  const [newName, setNewName] = useState("");
+  const [nameError, setNameError] = useState("");
   const [createBusy, setCreateBusy] = useState(false);
   const nameInputRef = useRef(null);
 
+
+  // fetch collections
+  useEffect(() => {
+    const fetchCollections = async () => {
+      setIsFetching(true);
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token");
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        const res = await fetch(`http://localhost:5000/api/collections/${book._id}`, { headers });
+        if (!res.ok) throw new Error("Failed to fetch collections");
+
+        const data = await res.json();
+        setCollections(data);
+      } catch (error) {
+        if (error.message === "No token") {
+          localStorage.removeItem("token");
+          redirect("/login");
+        }
+        console.error("Error fetching collections:", error);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    fetchCollections();
+  }, []);
+
   /* ── close on Escape ── */
   useEffect(() => {
-    const h = (e) => { if (e.key === "Escape") onClose(); };
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [onClose]);
@@ -84,28 +125,77 @@ function AddToCollectionModal({ book, onClose }) {
   }, [toast]);
 
   /* ──────────────── handlers ──────────────── */
-  const handleAddToExisting = () => {
+  const handleAddToExisting = async () => {
     if (!selected || listBusy) return;
+
     setListBusy(true);
-    const outcome = addBookToCollection(selected, book);
+
     const col = collections.find((c) => c.id === selected);
-    if (outcome === "duplicate") {
-      setToast({ type: "warn", msg: `"${book.title}" is already in "${col?.name}".` });
-    } else {
-      setToast({ type: "success", msg: `Added to "${col?.name}" ✓` });
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `http://localhost:5000/api/collections/addBook/${selected}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ bookId: book._id }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (
+        response.status === 400 &&
+        data.message === "Book already in collection"
+      ) {
+        setToast({
+          type: "warn",
+          msg: `"${book.title}" is already in "${col?.name}".`,
+        });
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add book");
+      }
+
+      setToast({
+        type: "success",
+        msg: `Added to "${col?.name}" ✓`,
+      });
+
       setTimeout(onClose, 1500);
-      return;
+    } catch (error) {
+      console.error("Error adding book to collection:", error);
+
+      setToast({
+        type: "warn",
+        msg: "Something went wrong. Try again.",
+      });
+    } finally {
+      setListBusy(false);
     }
-    setListBusy(false);
   };
+
 
   const handleCreate = () => {
     const trimmed = newName.trim();
-    if (!trimmed) { setNameError("Collection name can't be empty."); return; }
+    if (!trimmed) {
+      setNameError("Collection name can't be empty.");
+      return;
+    }
     const duplicate = collections.some(
-      (c) => c.name.toLowerCase() === trimmed.toLowerCase()
+      (c) => c.name.toLowerCase() === trimmed.toLowerCase(),
     );
-    if (duplicate) { setNameError(`A collection named "${trimmed}" already exists.`); return; }
+    if (duplicate) {
+      setNameError(`A collection named "${trimmed}" already exists.`);
+      return;
+    }
     setCreateBusy(true);
     const result = createCollection(trimmed, book);
     if (result.status === "duplicate_name") {
@@ -140,8 +230,16 @@ function AddToCollectionModal({ book, onClose }) {
         </div>
       </div>
       <button className="atc-close-btn" onClick={onClose} aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          width="14"
+          height="14"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
     </div>
@@ -152,7 +250,9 @@ function AddToCollectionModal({ book, onClose }) {
     <div
       className="atc-overlay"
       ref={overlayRef}
-      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+      onClick={(e) => {
+        if (e.target === overlayRef.current) onClose();
+      }}
     >
       {/* Floating toast */}
       {toast && (
@@ -160,7 +260,6 @@ function AddToCollectionModal({ book, onClose }) {
       )}
 
       <div className="atc-modal" role="dialog" aria-modal="true">
-
         {/* ══════════ LIST VIEW ══════════ */}
         {view === "list" && (
           <>
@@ -171,8 +270,16 @@ function AddToCollectionModal({ book, onClose }) {
             <div className="atc-tabs">
               <button className="atc-tab atc-tab--active">Existing</button>
               <button className="atc-tab" onClick={switchToCreate}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="11" height="11">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  width="11"
+                  height="11"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
                 New Collection
               </button>
@@ -180,51 +287,48 @@ function AddToCollectionModal({ book, onClose }) {
 
             {/* Collection list */}
             <div className="atc-list">
-              {collections.length === 0 ? (
+              {isFetching ? (
+                <div className="atc-empty-state"><p>Loading collections...</p></div>
+              ) : collections.length === 0 ? (
                 <div className="atc-empty-state">
                   <p>No collections yet.</p>
-                  <button className="atc-empty-cta" onClick={switchToCreate}>Create one →</button>
+                  <button className="atc-empty-cta" onClick={switchToCreate}>
+                    Create one →
+                  </button>
                 </div>
               ) : (
                 collections.map((col) => {
-                  const alreadyIn  = col.books.some((b) => b.id === book.id);
+                  const alreadyIn = col.alreadyIn;
                   const isSelected = selected === col.id;
+
                   return (
                     <button
                       key={col.id}
                       className={[
                         "atc-row",
-                        isSelected  ? "atc-row--selected"  : "",
-                        alreadyIn   ? "atc-row--has-book"  : "",
+                        isSelected ? "atc-row--selected" : "",
+                        alreadyIn ? "atc-row--has-book" : "",
                       ].join(" ").trim()}
                       onClick={() => {
                         if (alreadyIn) return;
                         setSelected(col.id);
                       }}
                     >
-                      {/* stacked mini covers */}
-                      <div className="atc-covers">
-                        {col.books.length === 0 ? (
-                          <div className="atc-covers-empty">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="18" height="18">
-                              <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/>
-                            </svg>
-                          </div>
-                        ) : (
-                          col.books.slice(0, 2).map((b, i) => (
-                            <img
-                              key={b.id} src={b.cover} alt=""
-                              className="atc-cover-img"
-                              style={{ left: `${i * 15}px`, zIndex: i + 1, transform: `rotate(${i === 0 ? -6 : 5}deg)` }}
-                            />
-                          ))
-                        )}
-                      </div>
+                      {col.img && (
+                        <div className="atc-covers">
+                          <img
+                            src={col.img}
+                            alt={col.name}
+                            className="atc-cover-img"
+                            style={{ position: "relative", left: 0, transform: "none", zIndex: 1 }}
+                          />
+                        </div>
+                      )}
 
                       <div className="atc-row-info">
                         <span className="atc-row-name">{col.name}</span>
                         <span className="atc-row-meta">
-                          {col.books.length} book{col.books.length !== 1 ? "s" : ""}
+                          {col.bookCount} book{col.bookCount !== 1 ? "s" : ""}
                         </span>
                       </div>
 
@@ -242,10 +346,11 @@ function AddToCollectionModal({ book, onClose }) {
                 })
               )}
             </div>
-
             {/* Footer */}
             <div className="atc-footer">
-              <button className="atc-btn atc-btn--ghost" onClick={onClose}>Cancel</button>
+              <button className="atc-btn atc-btn--ghost" onClick={onClose}>
+                Cancel
+              </button>
               <button
                 className={`atc-btn atc-btn--primary${!selected ? " atc-btn--disabled" : ""}${listBusy ? " atc-btn--busy" : ""}`}
                 onClick={handleAddToExisting}
@@ -265,17 +370,26 @@ function AddToCollectionModal({ book, onClose }) {
 
             {/* Tab-style switcher */}
             <div className="atc-tabs">
-              <button className="atc-tab" onClick={switchToList}>Existing</button>
+              <button className="atc-tab" onClick={switchToList}>
+                Existing
+              </button>
               <button className="atc-tab atc-tab--active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="11" height="11">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  width="11"
+                  height="11"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
                 New Collection
               </button>
             </div>
 
             <div className="atc-create-body">
-
               {/* Visual: book going into a new shelf */}
               <div className="atc-create-visual">
                 <div className="atc-create-shelf">
@@ -283,16 +397,30 @@ function AddToCollectionModal({ book, onClose }) {
                   <div className="atc-create-shelf-line" />
                 </div>
                 <p className="atc-create-hint">
-                  A new collection will be created and this book will be added to it.
+                  A new collection will be created and this book will be added
+                  to it.
                 </p>
               </div>
 
               {/* Name field */}
               <div className="atc-field">
-                <label className="atc-label" htmlFor="atc-name-input">Collection name</label>
-                <div className={`atc-input-wrap${nameError ? " atc-input-wrap--error" : ""}`}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" className="atc-input-icon">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                <label className="atc-label" htmlFor="atc-name-input">
+                  Collection name
+                </label>
+                <div
+                  className={`atc-input-wrap${nameError ? " atc-input-wrap--error" : ""}`}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    width="14"
+                    height="14"
+                    className="atc-input-icon"
+                  >
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                   </svg>
                   <input
                     id="atc-name-input"
@@ -302,13 +430,33 @@ function AddToCollectionModal({ book, onClose }) {
                     placeholder="e.g. Favourites, Summer Reads…"
                     value={newName}
                     maxLength={48}
-                    onChange={(e) => { setNewName(e.target.value); setNameError(""); }}
-                    onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); }}
+                    onChange={(e) => {
+                      setNewName(e.target.value);
+                      setNameError("");
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleCreate();
+                    }}
                   />
                   {newName && (
-                    <button className="atc-input-clear" onClick={() => { setNewName(""); setNameError(""); nameInputRef.current?.focus(); }}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="12" height="12">
-                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    <button
+                      className="atc-input-clear"
+                      onClick={() => {
+                        setNewName("");
+                        setNameError("");
+                        nameInputRef.current?.focus();
+                      }}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        width="12"
+                        height="12"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
                       </svg>
                     </button>
                   )}
@@ -322,7 +470,9 @@ function AddToCollectionModal({ book, onClose }) {
                 <div className="atc-existing-names">
                   <span className="atc-existing-label">Existing:</span>
                   {collections.map((c) => (
-                    <span key={c.id} className="atc-existing-chip">{c.name}</span>
+                    <span key={c.id} className="atc-existing-chip">
+                      {c.name}
+                    </span>
                   ))}
                 </div>
               )}
@@ -330,7 +480,9 @@ function AddToCollectionModal({ book, onClose }) {
 
             {/* Footer */}
             <div className="atc-footer">
-              <button className="atc-btn atc-btn--ghost" onClick={switchToList}>← Back</button>
+              <button className="atc-btn atc-btn--ghost" onClick={switchToList}>
+                ← Back
+              </button>
               <button
                 className={`atc-btn atc-btn--primary${!newName.trim() ? " atc-btn--disabled" : ""}${createBusy ? " atc-btn--busy" : ""}`}
                 onClick={handleCreate}
@@ -341,7 +493,6 @@ function AddToCollectionModal({ book, onClose }) {
             </div>
           </>
         )}
-
       </div>
     </div>
   );
@@ -351,26 +502,136 @@ function AddToCollectionModal({ book, onClose }) {
 export default function BookDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const bookId = Number(id);
+
+  const bookId = id;
+
+  const [rawBook, setRawBook] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // ── Context (per-book persistent store) ──────────────────────────────────
-  const { getBook, patchBook, addReview, getAvgRating, getTotalReviews } = useBookStore();
+  const { getBook, patchBook, addReview, getAvgRating, getTotalReviews } =
+    useBookStore();
   const bookData = getBook(bookId);
 
-  // Local draft state (only for the textarea — not persisted until submit)
   const [reviewText, setReviewText] = useState("");
   const [showCollectionModal, setShowCollectionModal] = useState(false);
 
-  const book = TOP_BOOKS.find((b) => b.id === bookId);
+  useEffect(() => {
+    const fetchBook = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token");
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+        const response = await fetch(
+          `http://localhost:5000/api/books/${bookId}`,
+          { headers },
+        );
+        if (!response.ok) {
+          throw new Error("Book not found or server error");
+        }
+        const data = await response.json();
+        setRawBook(data);
+      } catch (err) {
+        if (err.message === "No token") {
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+        console.error("Failed to fetch book:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBook();
+  }, [bookId]);
+
+  // Handle Loading & Error States
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div style={{ padding: "60px 0", textAlign: "center" }}>
+          <p
+            style={{
+              fontFamily: "'Cinzel', serif",
+              color: "#6b4c22",
+              fontSize: "18px",
+            }}
+          >
+            Loading book details...
+          </p>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (error || !rawBook) {
+    return (
+      <PageLayout>
+        <div style={{ padding: "60px 0", textAlign: "center" }}>
+          <p
+            style={{
+              fontFamily: "'Cinzel', serif",
+              color: "#6b4c22",
+              fontSize: "18px",
+            }}
+          >
+            {error || "Book not found."}
+          </p>
+          <button
+            className="bd-back-btn"
+            style={{ margin: "20px auto" }}
+            onClick={() => navigate("/dashboard")}
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Map backend model to frontend expectations so we don't break the JSX
+  const book = {
+    ...rawBook,
+    id: rawBook._id,
+    cover: rawBook.cover_image,
+    genre:
+      rawBook.categories && rawBook.categories.length > 0
+        ? rawBook.categories
+        : ["General"],
+    publishDate: rawBook.published_year,
+    description: rawBook.description || "No description provided.",
+    language: rawBook.language || "English",
+    relatedIds: rawBook.relatedIds || [],
+    rating: rawBook.rating || 0,
+    totalComments: rawBook.total_comments || 0,
+  };
+
+  // const book = TOP_BOOKS.find((b) => b.id === bookId);
 
   if (!book) {
     return (
       <PageLayout>
         <div style={{ padding: "60px 0", textAlign: "center" }}>
-          <p style={{ fontFamily: "'Cinzel', serif", color: "#6b4c22", fontSize: "18px" }}>
+          <p
+            style={{
+              fontFamily: "'Cinzel', serif",
+              color: "#6b4c22",
+              fontSize: "18px",
+            }}
+          >
             Book not found.
           </p>
-          <button className="bd-back-btn" style={{ margin: "20px auto" }} onClick={() => navigate("/dashboard")}>
+          <button
+            className="bd-back-btn"
+            style={{ margin: "20px auto" }}
+            onClick={() => navigate("/dashboard")}
+          >
             ← Back to Dashboard
           </button>
         </div>
@@ -379,9 +640,11 @@ export default function BookDetails() {
   }
 
   // Live computed values from context
-  const avgRating    = getAvgRating(bookId);
+  const avgRating = getAvgRating(bookId);
   const totalReviews = getTotalReviews(bookId);
-  const relatedBooks = book.relatedIds.map((rid) => TOP_BOOKS.find((b) => b.id === rid)).filter(Boolean);
+  const relatedBooks = book.relatedIds
+    .map((rid) => TOP_BOOKS.find((b) => b.id === rid))
+    .filter(Boolean);
 
   const handleSubmitReview = () => {
     if (!reviewText.trim()) return;
@@ -390,31 +653,39 @@ export default function BookDetails() {
       user: "You",
       text: reviewText.trim(),
       rating: bookData.userRating,
-      date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+      date: new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
     });
     setReviewText("");
   };
 
   const STATUS_OPTIONS = [
-    { key: "read",    label: "✓ Read" },
+    { key: "read", label: "✓ Read" },
     { key: "reading", label: "📖 Currently Reading" },
-    { key: "want",    label: "🔖 Want to Read" },
+    { key: "want", label: "🔖 Want to Read" },
   ];
 
   const DETAIL_CELLS = [
     { label: "Published", value: book.publishDate },
-    { label: "Pages",     value: book.pages },
-    { label: "Language",  value: book.language },
-    { label: "ISBN",      value: book.isbn },
+    { label: "Pages", value: book.pages },
+    { label: "Language", value: book.language },
+    // { label: "ISBN", value: book.isbn },
   ];
 
   return (
     <PageLayout>
       <div className="bd-page">
-
         {/* ── Back button ── */}
         <button className="bd-back-btn" onClick={() => navigate("/dashboard")}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
             <polyline points="15 18 9 12 15 6" />
           </svg>
           Back to Dashboard
@@ -428,14 +699,23 @@ export default function BookDetails() {
           <div className="bd-meta">
             <h1 className="bd-title">{book.title}</h1>
             <p className="bd-author">by {book.author}</p>
-            <span className="bd-genre-badge">{book.genre}</span>
+
+            {/* Map over the array to create separate badges */}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
+              {book.genre.map((category, index) => (
+                <span key={index} className="bd-genre-badge">
+                  {category}
+                </span>
+              ))}
+            </div>
 
             {/* Live per-book rating row */}
             <div className="bd-rating-row">
-              <StarsDisplay rating={avgRating} />
-              <span className="bd-rating-num">{avgRating.toFixed(1)}</span>
+              <StarsDisplay rating={book.rating} />
+              <span className="bd-rating-num">{Number(book.rating).toFixed(1)}</span>
               <span className="bd-reviews-count">
-                ({totalReviews.toLocaleString()} review{totalReviews !== 1 ? "s" : ""})
+                ({book.totalComments.toLocaleString()} review
+                {book.totalComments !== 1 ? "s" : ""})
               </span>
             </div>
 
@@ -458,17 +738,25 @@ export default function BookDetails() {
 
         {/* ── Actions panel ── */}
         <div className="bd-actions-panel">
-
           {/* Add to Collection */}
           <div>
-            <p className="bd-section-heading" style={{ borderBottom: "none", marginBottom: "12px" }}>
+            <p
+              className="bd-section-heading"
+              style={{ borderBottom: "none", marginBottom: "12px" }}
+            >
               My Collections
             </p>
             <button
               className="bd-add-to-collection-btn"
               onClick={() => setShowCollectionModal(true)}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ width: 15, height: 15, flexShrink: 0 }}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                style={{ width: 15, height: 15, flexShrink: 0 }}
+              >
                 <path d="M12 5v14M5 12h14" strokeLinecap="round" />
               </svg>
               Add to Collection
@@ -477,7 +765,10 @@ export default function BookDetails() {
 
           {/* Reading status — persisted per book */}
           <div>
-            <p className="bd-section-heading" style={{ borderBottom: "none", marginBottom: "12px" }}>
+            <p
+              className="bd-section-heading"
+              style={{ borderBottom: "none", marginBottom: "12px" }}
+            >
               Reading Status
             </p>
             <div className="bd-status-group">
@@ -487,7 +778,8 @@ export default function BookDetails() {
                   className={`bd-status-btn${bookData.readingStatus === key ? " active" : ""}`}
                   onClick={() =>
                     patchBook(bookId, {
-                      readingStatus: bookData.readingStatus === key ? null : key,
+                      readingStatus:
+                        bookData.readingStatus === key ? null : key,
                     })
                   }
                 >
@@ -499,7 +791,10 @@ export default function BookDetails() {
 
           {/* Star rating — persisted per book */}
           <div>
-            <p className="bd-section-heading" style={{ borderBottom: "none", marginBottom: "12px" }}>
+            <p
+              className="bd-section-heading"
+              style={{ borderBottom: "none", marginBottom: "12px" }}
+            >
               Your Rating
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
@@ -508,7 +803,13 @@ export default function BookDetails() {
                 onChange={(n) => patchBook(bookId, { userRating: n })}
               />
               {bookData.userRating > 0 && (
-                <span style={{ fontFamily: "'EB Garamond', serif", fontSize: "15px", color: "#6b4c22" }}>
+                <span
+                  style={{
+                    fontFamily: "'EB Garamond', serif",
+                    fontSize: "15px",
+                    color: "#6b4c22",
+                  }}
+                >
                   {bookData.userRating} / 5 stars
                 </span>
               )}
@@ -516,8 +817,13 @@ export default function BookDetails() {
           </div>
 
           {/* Write review */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <p className="bd-section-heading" style={{ borderBottom: "none", marginBottom: "0" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
+            <p
+              className="bd-section-heading"
+              style={{ borderBottom: "none", marginBottom: "0" }}
+            >
               Write a Review
             </p>
             <textarea
@@ -526,7 +832,10 @@ export default function BookDetails() {
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
             />
-            <button className="bd-review-submit-btn" onClick={handleSubmitReview}>
+            <button
+              className="bd-review-submit-btn"
+              onClick={handleSubmitReview}
+            >
               Submit Review
             </button>
           </div>
@@ -537,13 +846,23 @@ export default function BookDetails() {
           <p className="bd-section-heading">
             Reader Reviews
             {bookData.reviews.length > 0 && (
-              <span style={{ fontFamily: "'EB Garamond', serif", fontWeight: 400, fontSize: "14px", marginLeft: "8px", color: "#7a5c2e" }}>
+              <span
+                style={{
+                  fontFamily: "'EB Garamond', serif",
+                  fontWeight: 400,
+                  fontSize: "14px",
+                  marginLeft: "8px",
+                  color: "#7a5c2e",
+                }}
+              >
                 ({bookData.reviews.length} submitted)
               </span>
             )}
           </p>
           {bookData.reviews.length === 0 ? (
-            <p className="bd-no-reviews">No reviews yet. Be the first to share your thoughts!</p>
+            <p className="bd-no-reviews">
+              No reviews yet. Be the first to share your thoughts!
+            </p>
           ) : (
             <div className="bd-reviews-list">
               {bookData.reviews.map((rev) => (
@@ -553,7 +872,12 @@ export default function BookDetails() {
                     {rev.rating > 0 && (
                       <div className="bd-review-mini-stars">
                         {[1, 2, 3, 4, 5].map((n) => (
-                          <span key={n} className={`star${n <= rev.rating ? "" : " empty"}`}>★</span>
+                          <span
+                            key={n}
+                            className={`star${n <= rev.rating ? "" : " empty"}`}
+                          >
+                            ★
+                          </span>
                         ))}
                       </div>
                     )}
@@ -587,7 +911,6 @@ export default function BookDetails() {
             </div>
           </div>
         )}
-
       </div>
 
       {/* ── Add to Collection Modal ── */}

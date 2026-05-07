@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import React from "react";
 import SearchCatalog from "./SearchCatalog";
@@ -111,7 +112,6 @@ export default function UserDashboard() {
 
         setBooks(booksData);
         setCollections(collectionsData);
-        console.log("User Data:", userData);
         setUserName(userData.first_name || "Reader");
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -128,7 +128,21 @@ export default function UserDashboard() {
     fetchDashboardData();
   }, []);
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <PageLayout>
+        <div style={{ padding: "60px 0", textAlign: "center" }}>
+          <p
+            style={{
+              fontFamily: "'Cinzel', serif",
+              color: "#6b4c22",
+              fontSize: "18px",
+            }}
+          >
+            Loading Dashboard...
+          </p>
+        </div>
+      </PageLayout>
+    );
   }
 
   return (
