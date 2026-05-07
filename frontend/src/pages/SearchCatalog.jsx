@@ -70,7 +70,7 @@ export default function SearchCatalog({ placeholder = "Search about your book...
     setResults([]);
     setOpen(false);
     if (onSearch) onSearch(book.title, [book]);
-    navigate(`/book/${book.id}`);
+    navigate(`/book/${book._id}`);
   };
 
   return (
@@ -108,7 +108,7 @@ export default function SearchCatalog({ placeholder = "Search about your book...
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(101,67,33,0.10)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
-                <img src={book.cover} alt={book.title} style={styles.resultCover} />
+                <img src={book.cover_image.medium} alt={book.title} style={styles.resultCover} />
                 <div style={styles.resultInfo}>
                   <p style={styles.resultTitle}>{book.title}</p>
                   <p style={styles.resultAuthor}>{book.author}</p>

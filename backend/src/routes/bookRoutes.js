@@ -1,10 +1,11 @@
 import express from "express";
 import authMiddleware from "../middlewares/authMiddleware.js";
-import { getBooks, createBook, deleteBook } from "../controllers/bookController.js";
+import { getBooks, createBook, deleteBook,getBookById } from "../controllers/bookController.js";
 
 const router = express.Router();
 
 router.get("/", authMiddleware, getBooks);
+router.get("/:id", authMiddleware, getBookById);
 
 // POST /api/books
 router.post("/", authMiddleware, createBook);

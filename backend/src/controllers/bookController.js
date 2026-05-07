@@ -101,6 +101,22 @@ const createBook = async (req, res) => {
   }
 };
 
+const getBookById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const book = await Book.findById(id);
+
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    res.json(book);
+  } catch (error) {
+    console.error("Error fetching book:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 const deleteBook = async (req, res) => {
   try {
     const { id } = req.params;
@@ -117,4 +133,4 @@ const deleteBook = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-export { getBooks, createBook, deleteBook };
+export { getBooks, getBookById, createBook, deleteBook };

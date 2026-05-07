@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
-import { TOP_BOOKS } from "../data/books";
 import { useBookStore } from "../context/BookStoreContext";
 import "./BookDetails.css";
 
@@ -40,6 +39,26 @@ function StarRatingInput({ value, onChange }) {
           ★
         </button>
       ))}
+    </div>
+  );
+}
+
+function BookHeader({ book, onClose }) {
+  return (
+    <div className="atc-header">
+      <div className="atc-header-book">
+        <img src={book.cover} alt={book.title} className="atc-thumb" />
+        <div>
+          <p className="atc-header-eyebrow">Add to collection</p>
+          <p className="atc-header-title">{book.title}</p>
+          <p className="atc-header-author">by {book.author}</p>
+        </div>
+      </div>
+      <button className="atc-close-btn" onClick={onClose} aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
   );
 }
@@ -127,25 +146,6 @@ function AddToCollectionModal({ book, onClose }) {
     setView("list");
     setNameError("");
   };
-
-  /* ──────────────── shared book-header snippet ──────────────── */
-  const BookHeader = () => (
-    <div className="atc-header">
-      <div className="atc-header-book">
-        <img src={book.cover} alt={book.title} className="atc-thumb" />
-        <div>
-          <p className="atc-header-eyebrow">Add to collection</p>
-          <p className="atc-header-title">{book.title}</p>
-          <p className="atc-header-author">by {book.author}</p>
-        </div>
-      </div>
-      <button className="atc-close-btn" onClick={onClose} aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-  );
 
   /* ──────────────── render ──────────────── */
   return (
@@ -351,26 +351,75 @@ function AddToCollectionModal({ book, onClose }) {
 export default function BookDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const bookId = Number(id);
+  const bookId = id;
 
   // ── Context (per-book persistent store) ──────────────────────────────────
-  const { getBook, patchBook, addReview, getAvgRating, getTotalReviews } = useBookStore();
+  const { getBook, patchBook, addReview } = useBookStore();
   const bookData = getBook(bookId);
 
-  // Local draft state (only for the textarea — not persisted until submit)
+  const [book, setBook] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [reviewText, setReviewText] = useState("");
   const [showCollectionModal, setShowCollectionModal] = useState(false);
 
-  const book = TOP_BOOKS.find((b) => b.id === bookId);
+  useEffect(() => {
+    const fetchBook = async () => {
+      setLoading(true);
+      setError("");
 
-  if (!book) {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Authentication required.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/books/${bookId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setError(data.message || "Book not found.");
+          setBook(null);
+        } else {
+          const data = await res.json();
+          setBook(data);
+        }
+      } catch (err) {
+        console.error("Failed to load book", err);
+        setError("Unable to load book details.");
+        setBook(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBook();
+  }, [bookId]);
+
+  if (loading) {
     return (
       <PageLayout>
         <div style={{ padding: "60px 0", textAlign: "center" }}>
           <p style={{ fontFamily: "'Cinzel', serif", color: "#6b4c22", fontSize: "18px" }}>
-            Book not found.
+            Loading book details...
           </p>
-          <button className="bd-back-btn" style={{ margin: "20px auto" }} onClick={() => navigate("/dashboard")}>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (error || !book) {
+    return (
+      <PageLayout>
+        <div style={{ padding: "60px 0", textAlign: "center" }}>
+          <p style={{ fontFamily: "'Cinzel', serif", color: "#6b4c22", fontSize: "18px" }}>
+            {error || "Book not found."}
+          </p>
+          <button className="bd-back-btn" style={{ margin: "20px auto" }} onClick={() => navigate("/dashboard") }>
             ← Back to Dashboard
           </button>
         </div>
@@ -378,10 +427,30 @@ export default function BookDetails() {
     );
   }
 
-  // Live computed values from context
-  const avgRating    = getAvgRating(bookId);
-  const totalReviews = getTotalReviews(bookId);
-  const relatedBooks = book.relatedIds.map((rid) => TOP_BOOKS.find((b) => b.id === rid)).filter(Boolean);
+  // // Live computed values from context
+
+  //   return (
+  //     <PageLayout>
+  //       <div style={{ padding: "60px 0", textAlign: "center" }}>
+  //         <p style={{ fontFamily: "'Cinzel', serif", color: "#6b4c22", fontSize: "18px" }}>
+  //           Book not found.
+  //         </p>
+  //         <button className="bd-back-btn" style={{ margin: "20px auto" }} onClick={() => navigate("/dashboard")}>
+  //           ← Back to Dashboard
+  //         </button>
+  //       </div>
+  //     </PageLayout>
+  //   );
+  // }
+
+  const displayBook = {
+    ...book,
+    cover: book.cover || book.cover_image?.medium || book.cover_image?.small || book.cover_image?.large || "https://via.placeholder.com/160x240?text=No+Cover",
+  };
+
+  const avgRating = displayBook.rating ?? 0;
+  const totalReviews = (displayBook.total_comments ?? 0) + bookData.reviews.length;
+  const relatedBooks = [];
 
   const handleSubmitReview = () => {
     if (!reviewText.trim()) return;
@@ -402,10 +471,10 @@ export default function BookDetails() {
   ];
 
   const DETAIL_CELLS = [
-    { label: "Published", value: book.publishDate },
-    { label: "Pages",     value: book.pages },
-    { label: "Language",  value: book.language },
-    { label: "ISBN",      value: book.isbn },
+    { label: "Published", value: displayBook.published_year },
+    { label: "Pages",     value: displayBook.pages },
+    { label: "Category",  value: displayBook.categories?.join(", ") || "Unknown" },
+    { label: "Comments",  value: displayBook.total_comments ?? 0 },
   ];
 
   return (
@@ -423,12 +492,12 @@ export default function BookDetails() {
         {/* ── Hero ── */}
         <div className="bd-hero">
           <div className="bd-cover-wrap">
-            <img src={book.cover} alt={book.title} />
+            <img src={displayBook.cover} alt={displayBook.title} />
           </div>
           <div className="bd-meta">
-            <h1 className="bd-title">{book.title}</h1>
-            <p className="bd-author">by {book.author}</p>
-            <span className="bd-genre-badge">{book.genre}</span>
+            <h1 className="bd-title">{displayBook.title}</h1>
+            <p className="bd-author">by {displayBook.author}</p>
+            <span className="bd-genre-badge">{displayBook.categories?.[0] || "Unknown"}</span>
 
             {/* Live per-book rating row */}
             <div className="bd-rating-row">
@@ -439,7 +508,7 @@ export default function BookDetails() {
               </span>
             </div>
 
-            <p className="bd-description">{book.description}</p>
+            <p className="bd-description">{displayBook.description || "No description available."}</p>
           </div>
         </div>
 
@@ -593,7 +662,7 @@ export default function BookDetails() {
       {/* ── Add to Collection Modal ── */}
       {showCollectionModal && (
         <AddToCollectionModal
-          book={book}
+          book={displayBook}
           onClose={() => setShowCollectionModal(false)}
         />
       )}

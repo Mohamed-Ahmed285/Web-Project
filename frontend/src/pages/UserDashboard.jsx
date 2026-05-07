@@ -20,7 +20,7 @@ function BookCard({ book }) {
       onClick={() => navigate(`/book/${book._id}`)}
     >
       <div style={s.coverWrap}>
-        <img src={book.cover_image} alt={book.title} style={s.coverImg} />
+        <img src={book.cover_image.medium} alt={book.title} style={s.coverImg} />
       </div>
       <p style={s.bookTitle}>{book.title}</p>
       <p style={s.bookAuthor}>{book.author}</p>
@@ -48,7 +48,7 @@ function CollectionCard({ col }) {
   );
 }
 
-function ScrollRow({ children, itemWidth = 160, visibleCount = 4 }) {
+function ScrollRow({ children , visibleCount = 4 }) {
   const [index, setIndex] = useState(0);
   const items = React.Children.toArray(children);
   const total = items.length;
