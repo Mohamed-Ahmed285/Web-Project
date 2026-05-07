@@ -140,10 +140,9 @@ function MiniChart({ data }) {
   );
 }
 
-function StatCard({ icon, value, label }) {
+function StatCard({ value, label }) {
   return (
     <div className="adm-stat-card">
-      <span className="adm-stat-icon">{icon}</span>
       <div>
         <div className="adm-stat-value">{value}</div>
         <div className="adm-stat-label">{label}</div>
@@ -207,17 +206,14 @@ export default function AdminDashboard() {
                   <div className="adm-panel1">
                     <div className="adm-stats">
                       <StatCard
-                        icon="📚"
                         value={data.stats.totalBooks.toLocaleString()}
                         label="Total Books"
                       />
                       <StatCard
-                        icon="👥"
                         value={data.stats.totalUsers.toLocaleString()}
                         label="Total Users"
                       />
                       <StatCard
-                        icon="⭐"
                         value={data.stats.topRatedAvg.toFixed(1)}
                         label="Top Rated Avg"
                       />
