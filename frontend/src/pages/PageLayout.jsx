@@ -63,13 +63,13 @@ const s = {
   },
   logoArea: {
   position: "absolute",
-  top: "25px",
+  top: "5px",
   right: "50px",
   zIndex: 100, 
 },
   logoIcon: {
-    width: "90px",
-    height: "90px",
+    width: "130px",
+    height: "130px",
     objectFit: "contain",
   },
 };

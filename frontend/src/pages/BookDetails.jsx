@@ -445,7 +445,7 @@ export default function BookDetails() {
 
   const displayBook = {
     ...book,
-    cover: book.cover || book.cover_image?.medium || book.cover_image?.small || book.cover_image?.large || "https://via.placeholder.com/160x240?text=No+Cover",
+    cover: book.cover_image?.medium || book.cover_image?.small || book.cover_image?.large || "https://via.placeholder.com/160x240?text=No+Cover",
   };
 
   const avgRating = displayBook.rating ?? 0;

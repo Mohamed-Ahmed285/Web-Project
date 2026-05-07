@@ -29,7 +29,7 @@ function BookCard({ book }) {
 }
 
 function CollectionCard({ col }) {
-  const [hovered, setHovered] = useState(false);
+  const [hovered] = useState(false);
   const navigate = useNavigate();
   return (
     <div
@@ -84,6 +84,13 @@ export default function UserDashboard() {
   const [collections, setCollections] = useState([]);
   const [userName, setUserName] = useState("Reader");
   const [isLoading, setIsLoading] = useState(true);
+  //  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    window.location.href = "/login";
+  };
+
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -163,13 +170,31 @@ export default function UserDashboard() {
 
       {/* My Collections */}
       <section style={s.section}>
-        <h2 style={s.sectionTitle}>My Collections</h2>
-        <ScrollRow itemWidth={260} visibleCount={4}>
-          {collections.map((c) => (
-            <CollectionCard key={c._id} col={c} />
-          ))}
-        </ScrollRow>
+        <div style={s.sectionHeader}>
+          <h2 style={s.sectionTitle}>My Collections</h2>
+          <button style={s.createCollectionBtn}>
+            + Create Collection
+          </button>
+        </div>
+
+        {collections.length === 0 ? (
+          <div style={s.emptyCollectionState}>
+            <p style={s.emptyCollectionText}>No collections yet. Create one to start organizing your books.</p>
+          </div>
+        ) : (
+          <ScrollRow itemWidth={260} visibleCount={4}>
+            {collections.map((c) => (
+              <CollectionCard key={c._id} col={c} />
+            ))}
+          </ScrollRow>
+        )}
       </section>
+
+      <div style={s.footerActions}>
+        <button style={s.logoutBtn} onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
     </PageLayout>
   );
 }
@@ -195,8 +220,56 @@ const s = {
     marginTop: "5px",
     letterSpacing: "0.02em",
   },
+  logoutBtn: {
+    background: "#8b3e2f",
+    border: "none",
+    borderRadius: "12px",
+    color: "#fff",
+    fontWeight: 600,
+    padding: "12px 18px",
+    cursor: "pointer",
+    boxShadow: "0 6px 18px rgba(139,62,47,0.18)",
+    transition: "transform 0.2s, background 0.2s",
+  },
+  footerActions: {
+    marginTop: "28px",
+    display: "flex",
+    justifyContent: "flex-end",
+  },
   searchRow: {
     display: "flex",
+  },
+  sectionHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "14px",
+    marginBottom: "18px",
+  },
+  emptyCollectionState: {
+    padding: "40px",
+    border: "1.5px dashed rgba(101,67,33,0.35)",
+    borderRadius: "18px",
+    textAlign: "center",
+    margin: "12px 60px",
+    
+    // background: "rgba(255,249,236,0.75)",
+  },
+  emptyCollectionText: {
+    color: "#6b4c22",
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "21px",
+    // marginBottom: "16px",
+  },
+  createCollectionBtn: {
+    background: "#2c1a07",
+    border: "none",
+    borderRadius: "14px",
+    color: "#f9edcd",
+    fontWeight: 700,
+    padding: "11px 18px",
+    cursor: "pointer",
+    transition: "background 0.2s, transform 0.2s",
   },
   section: {
     display: "flex",
