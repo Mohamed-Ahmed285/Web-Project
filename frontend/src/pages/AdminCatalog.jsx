@@ -1,19 +1,19 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import PageLayout from "./PageLayout";
 
 // ── Sample data ────────────────────────────────────────────────────────────────
-const INITIAL_BOOKS = [
-  { id: 1,  title: "The Alchemist",                        author: "Paulo Coelho",        genre: "Fiction",   year: 1988, cover: "https://covers.openlibrary.org/b/id/8739161-L.jpg" },
-  { id: 2,  title: "1984",                                 author: "George Orwell",        genre: "Dystopia",  year: 1949, cover: "https://covers.openlibrary.org/b/id/7222246-L.jpg" },
-  { id: 3,  title: "The Hobbit",                           author: "J.R.R. Tolkien",       genre: "Fantasy",   year: 1937, cover: "https://covers.openlibrary.org/b/id/9255566-L.jpg" },
-  { id: 4,  title: "Atomic Habits",                        author: "James Clear",          genre: "Self Help", year: 2018, cover: "https://covers.openlibrary.org/b/id/10527107-L.jpg" },
-  { id: 5,  title: "The 5 AM Club",                        author: "Robin Sharma",         genre: "Self Help", year: 2018, cover: "https://covers.openlibrary.org/b/id/8739368-L.jpg" },
-  { id: 6,  title: "Dune",                                 author: "Frank Herbert",        genre: "Sci-Fi",    year: 1965, cover: "https://covers.openlibrary.org/b/id/10921787-L.jpg" },
-  { id: 7,  title: "To Kill a Mockingbird",                author: "Harper Lee",           genre: "Fiction",   year: 1960, cover: "https://covers.openlibrary.org/b/id/8225261-L.jpg" },
-  { id: 8,  title: "Pride and Prejudice",                  author: "Jane Austen",          genre: "Romance",   year: 1813, cover: "https://covers.openlibrary.org/b/id/8091016-L.jpg" },
-  { id: 9,  title: "Sapiens",                              author: "Yuval Noah Harari",    genre: "History",   year: 2011, cover: "https://covers.openlibrary.org/b/id/8370226-L.jpg" },
-  { id: 10, title: "Harry Potter and the Sorcerer's Stone",author: "J.K. Rowling",         genre: "Fantasy",   year: 1997, cover: "https://covers.openlibrary.org/b/id/7984916-L.jpg" },
-];
+// const INITIAL_BOOKS = [
+//   { id: 1,  title: "The Alchemist",                        author: "Paulo Coelho",        genre: "Fiction",   year: 1988, cover: "https://covers.openlibrary.org/b/id/8739161-L.jpg" },
+//   { id: 2,  title: "1984",                                 author: "George Orwell",        genre: "Dystopia",  year: 1949, cover: "https://covers.openlibrary.org/b/id/7222246-L.jpg" },
+//   { id: 3,  title: "The Hobbit",                           author: "J.R.R. Tolkien",       genre: "Fantasy",   year: 1937, cover: "https://covers.openlibrary.org/b/id/9255566-L.jpg" },
+//   { id: 4,  title: "Atomic Habits",                        author: "James Clear",          genre: "Self Help", year: 2018, cover: "https://covers.openlibrary.org/b/id/10527107-L.jpg" },
+//   { id: 5,  title: "The 5 AM Club",                        author: "Robin Sharma",         genre: "Self Help", year: 2018, cover: "https://covers.openlibrary.org/b/id/8739368-L.jpg" },
+//   { id: 6,  title: "Dune",                                 author: "Frank Herbert",        genre: "Sci-Fi",    year: 1965, cover: "https://covers.openlibrary.org/b/id/10921787-L.jpg" },
+//   { id: 7,  title: "To Kill a Mockingbird",                author: "Harper Lee",           genre: "Fiction",   year: 1960, cover: "https://covers.openlibrary.org/b/id/8225261-L.jpg" },
+//   { id: 8,  title: "Pride and Prejudice",                  author: "Jane Austen",          genre: "Romance",   year: 1813, cover: "https://covers.openlibrary.org/b/id/8091016-L.jpg" },
+//   { id: 9,  title: "Sapiens",                              author: "Yuval Noah Harari",    genre: "History",   year: 2011, cover: "https://covers.openlibrary.org/b/id/8370226-L.jpg" },
+//   { id: 10, title: "Harry Potter and the Sorcerer's Stone",author: "J.K. Rowling",         genre: "Fantasy",   year: 1997, cover: "https://covers.openlibrary.org/b/id/7984916-L.jpg" },
+// ];
 
 // ── Scoring / ranking helper ───────────────────────────────────────────────────
 function scoreBook(book, q) {
@@ -35,8 +35,8 @@ function scoreBook(book, q) {
 }
 
 // ── Add Book Dialog ────────────────────────────────────────────────────────────
-function AddBookDialog({ onClose, onAdd }) {
-  const [form, setForm] = useState({ title: "", author: "", genre: "", year: "", cover: "" });
+function AddBookDialog({ onClose, onAdd, isAdding }) {
+  const [form, setForm] = useState({ title: "", author: "", genre: "", year: "", pages: "" ,rating: "" });
   const [error, setError] = useState("");
 
   const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
@@ -47,14 +47,15 @@ function AddBookDialog({ onClose, onAdd }) {
       return;
     }
     onAdd({
-      id: Date.now(),
       title: form.title.trim(),
       author: form.author.trim(),
-      genre: form.genre.trim() || "Unknown",
-      year: form.year ? parseInt(form.year) : null,
-      cover: form.cover.trim() || "https://via.placeholder.com/80x115?text=No+Cover",
+      categories: form.genre.trim() ? [form.genre.trim()] : ["Unknown"],
+      published_year: form.year ? parseInt(form.year) : null,
+      pages: form.pages ? parseInt(form.pages) : 100,
+      rating: form.rating ? parseFloat(form.rating) : 3,
     });
     onClose();
+
   };
 
   return (
@@ -71,7 +72,8 @@ function AddBookDialog({ onClose, onAdd }) {
             { label: "Author *",      field: "author", placeholder: "e.g. F. Scott Fitzgerald" },
             { label: "Genre",         field: "genre",  placeholder: "e.g. Fiction" },
             { label: "Year",          field: "year",   placeholder: "e.g. 1925" },
-            { label: "Cover URL",     field: "cover",  placeholder: "https://..." },
+            { label: "Pages",         field: "pages",  placeholder: "e.g. 180" },
+            { label: "Rating",        field: "rating", placeholder: "e.g. 4.5" },
           ].map(({ label, field, placeholder }) => (
             <div key={field} style={d.fieldRow}>
               <label style={d.label}>{label}</label>
@@ -80,15 +82,16 @@ function AddBookDialog({ onClose, onAdd }) {
                 value={form[field]}
                 onChange={set(field)}
                 placeholder={placeholder}
-                type={field === "year" ? "number" : "text"}
-              />
+                type={field === "year" || field === "pages" || field === "rating" ? "number" : "text"}              
+                disabled={isAdding}
+                />
             </div>
           ))}
         </div>
 
         <div style={d.actions}>
-          <button style={d.cancelBtn} onClick={onClose}>Cancel</button>
-          <button style={d.doneBtn}   onClick={handleDone}>Done</button>
+          <button style={d.cancelBtn} onClick={onClose} disabled={isAdding}>Cancel</button>
+          <button style={d.doneBtn}   onClick={handleDone}disabled={isAdding}>{isAdding ? "Searching & Saving..." : "Done"}</button>
         </div>
       </div>
     </div>
@@ -97,21 +100,93 @@ function AddBookDialog({ onClose, onAdd }) {
 
 // ── Main AdminDashboard ────────────────────────────────────────────────────────
 export default function AdminDashboard() {
-  const [books, setBooks]       = useState(INITIAL_BOOKS);
+  const [books, setBooks]       = useState([]);
   const [query, setQuery]       = useState("");
   const [showDialog, setShowDialog] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5000/api/books', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        setBooks(data);
+      } catch (err) {
+        console.error("Failed to fetch books", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBooks();
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim();
-    return [...books]
+    const filteredbooks = Array.isArray(books) ? books : [];
+    return [...filteredbooks]
       .map(b => ({ book: b, score: scoreBook(b, q) }))
       .filter(x => x.score < 999)
       .sort((a, b) => a.score - b.score)
       .map(x => x.book);
   }, [books, query]);
 
-  const handleDelete = (id) => setBooks(bs => bs.filter(b => b.id !== id));
-  const handleAdd    = (book) => setBooks(bs => [book, ...bs]);
+const handleDelete = async (id) => {
+    if(!window.confirm("Are you sure you want to delete this book?")) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/books/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (res.ok) {
+        setBooks(bs => bs.filter(b => b._id !== id));
+      } else {
+        const errorData = await res.json();
+        alert(`Failed to delete book: ${errorData.message}`);
+      }
+    } catch (err) {
+      console.error("Failed to delete book", err);
+      alert("Failed to delete the book.");
+    }
+};
+
+const handleAdd = async (newBookData) => {
+    setIsAdding(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/books', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newBookData)
+      });
+      if(res.ok) {
+        const savedBook = await res.json();
+        setBooks(bs => [savedBook, ...bs]);
+        setShowDialog(false);
+      } else {
+        const errorData = await res.json();
+        alert(`Failed to add book: ${errorData.message}`);
+      }
+    } catch (err) {
+      console.error("Failed to add book", err);
+      alert("Network error while adding book.");
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
     <PageLayout>
@@ -149,18 +224,28 @@ export default function AdminDashboard() {
 
       {/* ── Scrollable book list ── */}
       <div style={s.listBox}>
-        {filtered.length === 0 ? (
+        {loading ? (
+           <p style={s.empty}>Loading books from database...</p>
+        ) : filtered.length === 0 ? (
           <p style={s.empty}>No books found.</p>
         ) : (
           filtered.map(book => (
-            <div key={book.id} style={s.bookRow}>
-              <img src={book.cover} alt={book.title} style={s.cover} />
+            <div key={book._id} style={s.bookRow}>
+              {/* UPDATED: Using the 'small' image from our new database structure */}
+              <img 
+                src={book.cover_image?.small || "https://via.placeholder.com/80x115?text=No+Cover"} 
+                alt={book.title} 
+                style={s.cover} 
+              />
               <div style={s.info}>
                 <p style={s.bookTitle}>{book.title}</p>
                 <p style={s.bookAuthor}><em>{book.author}</em></p>
-                <p style={s.bookMeta}>{book.genre}{book.year ? ` • ${book.year}` : ""}</p>
+                <p style={s.bookMeta}>
+                  {book.categories?.[0] || "Unknown"}
+                  {book.published_year ? ` • ${book.published_year}` : ""}
+                </p>
               </div>
-              <button style={s.deleteBtn} onClick={() => handleDelete(book.id)}>
+              <button style={s.deleteBtn} onClick={() => handleDelete(book._id)}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
                 </svg>
@@ -173,7 +258,7 @@ export default function AdminDashboard() {
 
       {/* ── Dialog ── */}
       {showDialog && (
-        <AddBookDialog onClose={() => setShowDialog(false)} onAdd={handleAdd} />
+        <AddBookDialog onClose={() => setShowDialog(false)} onAdd={handleAdd} isAdding={isAdding} />
       )}
     </PageLayout>
   );
