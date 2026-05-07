@@ -1,7 +1,7 @@
 import { verifyToken } from "../utils/tokens.js";
 
 const authMiddleware = (req, res, next) => {
-  const authorization = req.headers.authorization || req.headers.Authorization;
+  const authorization = req.headers.authorization;
   if (!authorization || !authorization.startsWith("Bearer ")) {
     return res.status(401).json({
       message: "Authorization header missing or malformed",

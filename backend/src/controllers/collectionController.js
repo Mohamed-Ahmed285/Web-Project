@@ -6,7 +6,7 @@ const getMyCollections = async (req, res) => {
       userId: req.user.id,
     }).populate("books");
 
-    res.status(200).json({ collections });
+    res.status(200).json(collections);
   } catch (error) {
     console.error("Error fetching collections:", error);
     res.status(500).json({

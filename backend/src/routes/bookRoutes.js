@@ -1,12 +1,9 @@
 import express from "express";
 import authMiddleware from "../middlewares/authMiddleware.js";
-import Book from "../models/Book.js";
+import { getBooks } from "../controllers/bookController.js";
 
 const router = express.Router();
 
-router.get("/", authMiddleware, async (req, res) => {
-  const books = await Book.find();
-  res.json(books);
-});
+router.get("/", authMiddleware, getBooks);
 
 export default router;

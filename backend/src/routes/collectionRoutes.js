@@ -4,6 +4,6 @@ import { getMyCollections } from "../controllers/collectionController.js";
 
 const router = express.Router();
 
-router.get("/my-collections", authMiddleware, getMyCollections);
+router.get("/", authMiddleware, getMyCollections);
 
 export default router;

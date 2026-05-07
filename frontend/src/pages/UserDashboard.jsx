@@ -1,30 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import SearchCatalog from "./SearchCatalog";
 import PageLayout from "./PageLayout";
 import { useNavigate } from "react-router-dom";
-import { COLLECTIONS } from "./CollectionView";
-import { useBookStore } from "../context/BookStoreContext";
-
-// ── Sample data ────────────────────────────────────────────────────────────────
-const TOP_BOOKS = [
-  { id: 1, title: "The Alchemist", author: "Paulo Coelho", cover: "https://covers.openlibrary.org/b/id/8739161-L.jpg" },
-  { id: 2, title: "1984", author: "George Orwell", cover: "https://covers.openlibrary.org/b/id/7222246-L.jpg" },
-  { id: 3, title: "The Hobbit", author: "J.R.R. Tolkien", cover: "https://covers.openlibrary.org/b/id/9255566-L.jpg" },
-  { id: 4, title: "Atomic Habits", author: "James Clear", cover: "https://covers.openlibrary.org/b/id/10527107-L.jpg" },
-  { id: 5, title: "The 5 AM Club", author: "Robin Sharma", cover: "https://covers.openlibrary.org/b/id/8739368-L.jpg" },
-  { id: 6, title: "Dune", author: "Frank Herbert", cover: "https://covers.openlibrary.org/b/id/10921787-L.jpg" },
-  { id: 7, title: "To Kill a Mockingbird", author: "Harper Lee", cover: "https://covers.openlibrary.org/b/id/8225261-L.jpg" },
-  { id: 8, title: "Pride and Prejudice", author: "Jane Austen", cover: "https://covers.openlibrary.org/b/id/8091016-L.jpg" },
-  { id: 9, title: "The Catcher in the Rye", author: "J.D. Salinger", cover: "https://covers.openlibrary.org/b/id/8231856-L.jpg" },
-  { id: 10, title: "The Great Gatsby", author: "F. Scott Fitzgerald", cover: "https://covers.openlibrary.org/b/id/7352160-L.jpg" },
-  { id: 11, title: "Brave New World", author: "Aldous Huxley", cover: "https://covers.openlibrary.org/b/id/8775116-L.jpg" },
-  { id: 12, title: "The Lord of the Rings", author: "J.R.R. Tolkien", cover: "https://covers.openlibrary.org/b/id/8231990-L.jpg" },
-  { id: 13, title: "Harry Potter and the Sorcerer's Stone", author: "J.K. Rowling", cover: "https://covers.openlibrary.org/b/id/7984916-L.jpg" },
-  { id: 14, title: "The Book Thief", author: "Markus Zusak", cover: "https://covers.openlibrary.org/b/id/8235081-L.jpg" },
-  { id: 15, title: "The Kite Runner", author: "Khaled Hosseini", cover: "https://covers.openlibrary.org/b/id/8228691-L.jpg" },
-  { id: 16, title: "Sapiens", author: "Yuval Noah Harari", cover: "https://covers.openlibrary.org/b/id/8370226-L.jpg" },
-];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 function BookCard({ book }) {
@@ -32,13 +10,17 @@ function BookCard({ book }) {
   const navigate = useNavigate();
   return (
     <div
-      style={{ ...s.bookCard, transform: hovered ? "translateY(-6px) scale(1.03)" : "none", transition: "transform 0.25s ease" }}
+      style={{
+        ...s.bookCard,
+        transform: hovered ? "translateY(-6px) scale(1.03)" : "none",
+        transition: "transform 0.25s ease",
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => navigate(`/book/${book.id}`)}
+      onClick={() => navigate(`/book/${book._id}`)}
     >
       <div style={s.coverWrap}>
-        <img src={book.cover} alt={book.title} style={s.coverImg} />
+        <img src={book.cover_image} alt={book.title} style={s.coverImg} />
       </div>
       <p style={s.bookTitle}>{book.title}</p>
       <p style={s.bookAuthor}>{book.author}</p>
@@ -54,30 +36,13 @@ function CollectionCard({ col }) {
       style={{
         ...s.collCard,
         transform: hovered ? "translateY(-5px) scale(1.02)" : "none",
-        boxShadow: hovered
-          ? "0 10px 28px rgba(50,25,5,0.30)"
-          : "0 4px 16px rgba(50,25,5,0.15)",
-        borderColor: hovered ? "rgba(101,67,33,0.6)" : "rgba(101,67,33,0.35)",
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={() => navigate(`/collection/${col.id}`)}
+      onClick={() => navigate(`/collection/${col._id}`)}
     >
       <div style={s.collCovers}>
-        {col.books.slice(0, 2).map((b, i) => (
-          <img
-            key={b.id}
-            src={b.cover}
-            alt={b.title}
-            style={{
-              ...s.collCover,
-              left: `${i * 38}px`,
-              zIndex: i === 0 ? 1 : 2,
-              transform: i === 0 ? "rotate(-6deg)" : "rotate(3deg)",
-            }}
-          />
-        ))}
+        <img src={col.img} alt={col.name} style={s.singleCollImage} />
       </div>
+
       <p style={s.collName}>{col.name}</p>
     </div>
   );
@@ -88,28 +53,83 @@ function ScrollRow({ children, itemWidth = 160, visibleCount = 4 }) {
   const items = React.Children.toArray(children);
   const total = items.length;
 
-  const prev = () => setIndex(i => (i - 1 + total) % total);
-  const next = () => setIndex(i => (i + 1) % total);
+  if (total === 0) return null;
 
-  const visible = Array.from({ length: Math.min(visibleCount, total) }, (_, k) => items[(index + k) % total]);
+  const prev = () => setIndex((i) => (i - 1 + total) % total);
+  const next = () => setIndex((i) => (i + 1) % total);
+
+  const visible = Array.from(
+    { length: Math.min(visibleCount, total) },
+    (_, k) => items[(index + k) % total],
+  );
 
   return (
     <div style={s.rowOuter}>
-      <button style={s.arrowBtn} onClick={prev}>&#8249;</button>
+      <button style={s.arrowBtn} onClick={prev}>
+        &#8249;
+      </button>
       <div style={s.rowViewport}>
-        <div style={s.rowTrack}>
-          {visible}
-        </div>
+        <div style={s.rowTrack}>{visible}</div>
       </div>
-      <button style={s.arrowBtn} onClick={next}>&#8250;</button>
+      <button style={s.arrowBtn} onClick={next}>
+        &#8250;
+      </button>
     </div>
   );
 }
 
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function UserDashboard() {
-  const userName = "John";
-  const { collections } = useBookStore();
+  const [books, setBooks] = useState([]);
+  const [collections, setCollections] = useState([]);
+  const [userName, setUserName] = useState("Reader");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token");
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        const [booksRes, collectionsRes, userRes] = await Promise.all([
+          fetch("http://localhost:5000/api/books", { headers }),
+          fetch("http://localhost:5000/api/collections", { headers }),
+          fetch("http://localhost:5000/api/user/me", { headers }),
+        ]);
+
+        if (!booksRes.ok || !collectionsRes.ok || !userRes.ok) {
+          throw new Error("API error");
+        }
+
+        const booksData = await booksRes.json();
+        const collectionsData = await collectionsRes.json();
+        const userData = await userRes.json();
+
+        setBooks(booksData);
+        setCollections(collectionsData);
+        console.log("User Data:", userData);
+        setUserName(userData.first_name || "Reader");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        if (error.message === "API error") {
+          console.error("One or more API requests failed.");
+          localStorage.removeItem("token");
+          window.location.href = "/login"; // redirect
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <PageLayout>
@@ -117,29 +137,37 @@ export default function UserDashboard() {
       <div style={s.header}>
         <div>
           <h1 style={s.welcomeTitle}>Welcome back, {userName}</h1>
-          <p style={s.tagline}><em>A reader lives a thousand lives before he dies.</em></p>
+          <p style={s.tagline}>
+            <em>A reader lives a thousand lives before he dies.</em>
+          </p>
         </div>
       </div>
 
       {/* Search */}
       <div style={s.searchRow}>
-        <SearchCatalog books={TOP_BOOKS} onSearch={(q, results) => console.log("Search:", q, results)} />
+        <SearchCatalog
+          books={books}
+          onSearch={(q, results) => console.log("Search:", q, results)}
+        />
       </div>
 
       {/* Top Books */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>Top Books</h2>
         <ScrollRow itemWidth={140} visibleCount={7}>
-          {TOP_BOOKS.map(b => <BookCard key={b.id} book={b} />)}
+          {books.map((b) => (
+            <BookCard key={b._id} book={b} />
+          ))}
         </ScrollRow>
-
       </section>
 
       {/* My Collections */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>My Collections</h2>
         <ScrollRow itemWidth={260} visibleCount={4}>
-          {collections.map(c => <CollectionCard key={c.id} col={c} />)}
+          {collections.map((c) => (
+            <CollectionCard key={c._id} col={c} />
+          ))}
         </ScrollRow>
       </section>
     </PageLayout>
@@ -259,7 +287,8 @@ const s = {
     cursor: "pointer",
     backdropFilter: "blur(2px)",
     boxShadow: "0 4px 16px rgba(50,25,5,0.15)",
-    transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+    transition:
+      "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
   },
   collCovers: {
     position: "relative",
@@ -281,5 +310,12 @@ const s = {
     fontWeight: 600,
     color: "#2c1a07",
     letterSpacing: "0.05em",
+  },
+  singleCollImage: {
+    width: "140px",
+    height: "120px",
+    objectFit: "cover",
+    borderRadius: "8px",
+    boxShadow: "3px 5px 14px rgba(30,15,0,0.5)",
   },
 };
