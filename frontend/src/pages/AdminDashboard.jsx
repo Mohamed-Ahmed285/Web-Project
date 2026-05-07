@@ -143,10 +143,10 @@ function MiniChart({ data }) {
 function StatCard({ value, label }) {
   return (
     <div className="adm-stat-card">
-      <div>
+      
         <div className="adm-stat-value">{value}</div>
         <div className="adm-stat-label">{label}</div>
-      </div>
+    
     </div>
   );
 }
