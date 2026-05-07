@@ -32,7 +32,12 @@ export default function Login() {
           setServerError(data.message || "Login failed.");
         } else {
           localStorage.setItem("token", data.token);
-          navigate("/dashboard");
+          localStorage.setItem("role", data.user.is_admin ? "admin" : "user");
+          if (data.user.is_admin) {
+            navigate("/admin");
+          } else {
+            navigate("/dashboard");
+          }
         }
       } catch {
         setServerError("Network error. Please try again.");

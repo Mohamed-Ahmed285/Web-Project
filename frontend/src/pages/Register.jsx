@@ -70,7 +70,12 @@ export default function Register() {
         } else{
           if (data.token) {
             localStorage.setItem("token", data.token);
-            navigate("/dashboard");
+            localStorage.setItem("role", data.user.is_admin ? "admin" : "user");
+            if (data.user.is_admin) {
+              navigate("/admin");
+            } else {
+              navigate("/dashboard");
+            }
           } else {
             setServerError("Registration succeeded but no token received.");
           }

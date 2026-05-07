@@ -30,6 +30,7 @@ const login = async (req, res) => {
         secondName: user.second_name,
         email: user.email,
         gender: user.gender,
+        is_admin: user.is_admin,
       },
     });
   } catch (error) {
@@ -66,6 +67,7 @@ const register = async (req, res) => {
         secondName: user.second_name,
         email: user.email,
         gender: user.gender,
+        is_admin: user.is_admin,
       },
     });
   } catch (error) {

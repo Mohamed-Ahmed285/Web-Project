@@ -11,8 +11,9 @@ const bookSchema = new mongoose.Schema(
       required: [true, "Author is required"],
     },
     cover_image: {
-      type: String,
-      required: [true, "Cover image URL/path is required"],
+      small: { type: String, default: "default-s.jpg" },
+      medium: { type: String, default: "default-m.jpg" },
+      large: { type: String, default: "default-l.jpg" }
     },
     published_year: {
       type: Number,
