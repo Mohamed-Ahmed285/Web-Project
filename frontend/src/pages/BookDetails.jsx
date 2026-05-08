@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, redirect } from "react-router-dom";
 import PageLayout from "./PageLayout";
+import { TOP_BOOKS } from "../data/books";
 import { useBookStore } from "../context/BookStoreContext";
 import "./BookDetails.css";
 
@@ -43,26 +44,6 @@ function StarRatingInput({ value, onChange }) {
           ★
         </button>
       ))}
-    </div>
-  );
-}
-
-function BookHeader({ book, onClose }) {
-  return (
-    <div className="atc-header">
-      <div className="atc-header-book">
-        <img src={book.cover} alt={book.title} className="atc-thumb" />
-        <div>
-          <p className="atc-header-eyebrow">Add to collection</p>
-          <p className="atc-header-title">{book.title}</p>
-          <p className="atc-header-author">by {book.author}</p>
-        </div>
-      </div>
-      <button className="atc-close-btn" onClick={onClose} aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
     </div>
   );
 }
@@ -241,7 +222,7 @@ function AddToCollectionModal({ book, onClose }) {
   const BookHeader = () => (
     <div className="atc-header">
       <div className="atc-header-book">
-        <img src={book.cover} alt={book.title} className="atc-thumb" />
+        <img src={book.cover_image.medium} alt={book.title} className="atc-thumb" />
         <div>
           <p className="atc-header-eyebrow">Add to collection</p>
           <p className="atc-header-title">{book.title}</p>
@@ -249,8 +230,16 @@ function AddToCollectionModal({ book, onClose }) {
         </div>
       </div>
       <button className="atc-close-btn" onClick={onClose} aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          width="14"
+          height="14"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
     </div>
@@ -404,7 +393,7 @@ function AddToCollectionModal({ book, onClose }) {
               {/* Visual: book going into a new shelf */}
               <div className="atc-create-visual">
                 <div className="atc-create-shelf">
-                  <img src={book.cover} alt="" className="atc-create-cover" />
+                  <img src={book.cover_image.medium} alt="" className="atc-create-cover" />
                   <div className="atc-create-shelf-line" />
                 </div>
                 <p className="atc-create-hint">
@@ -513,26 +502,135 @@ function AddToCollectionModal({ book, onClose }) {
 export default function BookDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const bookId = Number(id);
+
+  const bookId = id;
+
+  const [rawBook, setRawBook] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // ── Context (per-book persistent store) ──────────────────────────────────
-  const { getBook, patchBook, addReview, getAvgRating, getTotalReviews } = useBookStore();
+  const { getBook, patchBook, addReview, getAvgRating, getTotalReviews } =
+    useBookStore();
   const bookData = getBook(bookId);
 
-  // Local draft state (only for the textarea — not persisted until submit)
   const [reviewText, setReviewText] = useState("");
   const [showCollectionModal, setShowCollectionModal] = useState(false);
 
-  const book = TOP_BOOKS.find((b) => b.id === bookId);
+  useEffect(() => {
+    const fetchBook = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token");
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+        const response = await fetch(
+          `http://localhost:5000/api/books/${bookId}`,
+          { headers },
+        );
+        if (!response.ok) {
+          throw new Error("Book not found or server error");
+        }
+        const data = await response.json();
+        setRawBook(data);
+      } catch (err) {
+        if (err.message === "No token") {
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+        console.error("Failed to fetch book:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBook();
+  }, [bookId]);
+
+  // Handle Loading & Error States
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div style={s.loadingWrapper}>
+          <style>{`
+                  @keyframes ud-spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                `}</style>
+          <div style={s.spinner} />
+          <p style={s.loadingText}>Loading your dashboard...</p>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (error || !rawBook) {
+    return (
+      <PageLayout>
+        <div style={{ padding: "60px 0", textAlign: "center" }}>
+          <p
+            style={{
+              fontFamily: "'Cinzel', serif",
+              color: "#6b4c22",
+              fontSize: "18px",
+            }}
+          >
+            {error || "Book not found."}
+          </p>
+          <button
+            className="bd-back-btn"
+            style={{ margin: "20px auto" }}
+            onClick={() => navigate("/dashboard")}
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Map backend model to frontend expectations so we don't break the JSX
+  const book = {
+    ...rawBook,
+    id: rawBook._id,
+    cover: rawBook.cover_image,
+    genre:
+      rawBook.categories && rawBook.categories.length > 0
+        ? rawBook.categories
+        : ["General"],
+    publishDate: rawBook.published_year,
+    description: rawBook.description || "No description provided.",
+    language: rawBook.language || "English",
+    relatedIds: rawBook.relatedIds || [],
+    rating: rawBook.rating || 0,
+    totalComments: rawBook.total_comments || 0,
+  };
+
+  // const book = TOP_BOOKS.find((b) => b.id === bookId);
 
   if (!book) {
     return (
       <PageLayout>
         <div style={{ padding: "60px 0", textAlign: "center" }}>
-          <p style={{ fontFamily: "'Cinzel', serif", color: "#6b4c22", fontSize: "18px" }}>
+          <p
+            style={{
+              fontFamily: "'Cinzel', serif",
+              color: "#6b4c22",
+              fontSize: "18px",
+            }}
+          >
             Book not found.
           </p>
-          <button className="bd-back-btn" style={{ margin: "20px auto" }} onClick={() => navigate("/dashboard")}>
+          <button
+            className="bd-back-btn"
+            style={{ margin: "20px auto" }}
+            onClick={() => navigate("/dashboard")}
+          >
             ← Back to Dashboard
           </button>
         </div>
@@ -541,9 +639,11 @@ export default function BookDetails() {
   }
 
   // Live computed values from context
-  const avgRating    = getAvgRating(bookId);
+  const avgRating = getAvgRating(bookId);
   const totalReviews = getTotalReviews(bookId);
-  const relatedBooks = book.relatedIds.map((rid) => TOP_BOOKS.find((b) => b.id === rid)).filter(Boolean);
+  const relatedBooks = book.relatedIds
+    .map((rid) => TOP_BOOKS.find((b) => b.id === rid))
+    .filter(Boolean);
 
   const handleSubmitReview = () => {
     if (!reviewText.trim()) return;
@@ -569,9 +669,9 @@ export default function BookDetails() {
 
   const DETAIL_CELLS = [
     { label: "Published", value: book.publishDate },
-    { label: "Pages",     value: book.pages },
-    { label: "Language",  value: book.language },
-    { label: "ISBN",      value: book.isbn },
+    { label: "Pages", value: book.pages },
+    { label: "Language", value: book.language },
+    // { label: "ISBN", value: book.isbn },
   ];
 
   return (
@@ -593,12 +693,20 @@ export default function BookDetails() {
         {/* ── Hero ── */}
         <div className="bd-hero">
           <div className="bd-cover-wrap">
-            <img src={displayBook.cover} alt={displayBook.title} />
+            <img src={book.cover_image.medium} alt={book.title} />
           </div>
           <div className="bd-meta">
             <h1 className="bd-title">{book.title}</h1>
             <p className="bd-author">by {book.author}</p>
-            <span className="bd-genre-badge">{book.genre}</span>
+
+            {/* Map over the array to create separate badges */}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
+              {book.genre.map((category, index) => (
+                <span key={index} className="bd-genre-badge">
+                  {category}
+                </span>
+              ))}
+            </div>
 
             {/* Live per-book rating row */}
             <div className="bd-rating-row">
@@ -610,7 +718,7 @@ export default function BookDetails() {
               </span>
             </div>
 
-            <p className="bd-description">{displayBook.description || "No description available."}</p>
+            <p className="bd-description">{book.description}</p>
           </div>
         </div>
 
@@ -793,7 +901,7 @@ export default function BookDetails() {
                   onClick={() => navigate(`/book/${rb.id}`)}
                 >
                   <div className="bd-related-cover">
-                    <img src={rb.cover} alt={rb.title} />
+                    <img src={rb.cover_image.medium} alt={rb.title} />
                   </div>
                   <p className="bd-related-title">{rb.title}</p>
                   <p className="bd-related-author">{rb.author}</p>
@@ -807,10 +915,37 @@ export default function BookDetails() {
       {/* ── Add to Collection Modal ── */}
       {showCollectionModal && (
         <AddToCollectionModal
-          book={displayBook}
+          book={book}
           onClose={() => setShowCollectionModal(false)}
         />
       )}
     </PageLayout>
   );
+}
+const s = {
+  spinner: {
+    width: "80px",
+    height: "80px",
+    borderRadius: "50%",
+    border: "8px solid #d0b17a",
+    borderTopColor: "#26160b",
+    animation: "ud-spin 1s linear infinite",
+    boxShadow: "0 0 0 5px rgba(255, 255, 255, 0.03), inset 0 0 0 1px rgba(255,255,255,0.15)",
+  },
+  loadingText: {
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "16px",
+    color: "#26160b",
+    maxWidth: "320px",
+  },
+  loadingWrapper: {
+    minHeight: "calc(100vh - 80px)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "22px",
+    color: "#f5e4b9",
+    textAlign: "center",
+  },
 }
