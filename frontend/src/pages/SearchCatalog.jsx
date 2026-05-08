@@ -109,6 +109,7 @@ export default function SearchCatalog({ placeholder = "Search about your book...
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
                 <img src={book.cover_image.medium} alt={book.title} style={styles.resultCover} />
+
                 <div style={styles.resultInfo}>
                   <p style={styles.resultTitle}>{book.title}</p>
                   <p style={styles.resultAuthor}>{book.author}</p>

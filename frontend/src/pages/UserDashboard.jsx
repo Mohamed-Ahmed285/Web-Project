@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import React from "react";
 import SearchCatalog from "./SearchCatalog";
@@ -117,7 +118,6 @@ export default function UserDashboard() {
 
         setBooks(booksData);
         setCollections(collectionsData);
-        console.log("User Data:", userData);
         setUserName(userData.first_name || "Reader");
       } catch (error) {
         console.error("Error fetching data:", error);
