@@ -1,4 +1,24 @@
 import Book from "../models/Book.js";
+import Activity from "../models/Activity.js";
+
+const getPopularBooks = async (req, res) => {
+  try {
+
+    let limit = parseInt(req.query.limit) || 5;
+    if (limit > 50) limit = 50;
+    if (limit < 1) limit = 5;
+    // O(1)
+    const popularBooks = await Book.find()
+      .sort({ total_reads: -1 })
+      .limit(limit)
+      .select('title author total_reads');
+
+    res.json(popularBooks);
+  } catch (error) {
+    console.error("Error fetching popular books:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 const getBooks = async (req, res) => {
   try {
@@ -89,8 +109,15 @@ const createBook = async (req, res) => {
 
     // Save to database
     const savedBook = await newBook.save();
+    await Activity.create({
+      type: "add",
+      user: "Admin",
+      book: savedBook.title
+    });
+
     res.status(201).json(savedBook);
 
+  
   } catch (error) {
     console.error("Error adding book:", error);
     if (error.name === "ValidationError") {
@@ -100,6 +127,7 @@ const createBook = async (req, res) => {
     res.status(500).json({ message: "Failed to add book" });
   }
 };
+
 
 const getBookById = async (req, res) => {
   try {
@@ -133,4 +161,7 @@ const deleteBook = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-export { getBooks, getBookById, createBook, deleteBook };
+
+
+
+export { getBooks, getBookById, createBook, deleteBook , getPopularBooks };

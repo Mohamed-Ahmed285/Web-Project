@@ -1,20 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import PageLayout from "./PageLayout";
 
-// ── Sample data ────────────────────────────────────────────────────────────────
-// const INITIAL_BOOKS = [
-//   { id: 1,  title: "The Alchemist",                        author: "Paulo Coelho",        genre: "Fiction",   year: 1988, cover: "https://covers.openlibrary.org/b/id/8739161-L.jpg" },
-//   { id: 2,  title: "1984",                                 author: "George Orwell",        genre: "Dystopia",  year: 1949, cover: "https://covers.openlibrary.org/b/id/7222246-L.jpg" },
-//   { id: 3,  title: "The Hobbit",                           author: "J.R.R. Tolkien",       genre: "Fantasy",   year: 1937, cover: "https://covers.openlibrary.org/b/id/9255566-L.jpg" },
-//   { id: 4,  title: "Atomic Habits",                        author: "James Clear",          genre: "Self Help", year: 2018, cover: "https://covers.openlibrary.org/b/id/10527107-L.jpg" },
-//   { id: 5,  title: "The 5 AM Club",                        author: "Robin Sharma",         genre: "Self Help", year: 2018, cover: "https://covers.openlibrary.org/b/id/8739368-L.jpg" },
-//   { id: 6,  title: "Dune",                                 author: "Frank Herbert",        genre: "Sci-Fi",    year: 1965, cover: "https://covers.openlibrary.org/b/id/10921787-L.jpg" },
-//   { id: 7,  title: "To Kill a Mockingbird",                author: "Harper Lee",           genre: "Fiction",   year: 1960, cover: "https://covers.openlibrary.org/b/id/8225261-L.jpg" },
-//   { id: 8,  title: "Pride and Prejudice",                  author: "Jane Austen",          genre: "Romance",   year: 1813, cover: "https://covers.openlibrary.org/b/id/8091016-L.jpg" },
-//   { id: 9,  title: "Sapiens",                              author: "Yuval Noah Harari",    genre: "History",   year: 2011, cover: "https://covers.openlibrary.org/b/id/8370226-L.jpg" },
-//   { id: 10, title: "Harry Potter and the Sorcerer's Stone",author: "J.K. Rowling",         genre: "Fantasy",   year: 1997, cover: "https://covers.openlibrary.org/b/id/7984916-L.jpg" },
-// ];
-
 // ── Scoring / ranking helper ───────────────────────────────────────────────────
 function scoreBook(book, q) {
   if (!q) return 0; // no query → all equal, keep original order
@@ -231,7 +217,6 @@ const handleAdd = async (newBookData) => {
         ) : (
           filtered.map(book => (
             <div key={book._id} style={s.bookRow}>
-              {/* UPDATED: Using the 'small' image from our new database structure */}
               <img 
                 src={book.cover_image?.small || "https://via.placeholder.com/80x115?text=No+Cover"} 
                 alt={book.title} 

@@ -39,6 +39,11 @@ const bookSchema = new mongoose.Schema(
       required: [true, "Total comments count is required"],
       default: 0,
     },
+    total_reads: {
+    type: Number, 
+    default: 0,
+    index: -1 //field pre-sorted
+    },
   },
   {
     timestamps: true,

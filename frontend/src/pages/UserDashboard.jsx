@@ -84,7 +84,6 @@ export default function UserDashboard() {
   const [collections, setCollections] = useState([]);
   const [userName, setUserName] = useState("Reader");
   const [isLoading, setIsLoading] = useState(true);
-  //  const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");

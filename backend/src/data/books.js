@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import Book from "./src/models/Book.js";
+import Book from "../models/Book.js";
 
 // Load environment variables so we can get your MONGO_URI
 dotenv.config();
@@ -19,7 +19,8 @@ const dummyBooks = [
     categories: ["Classic", "Fiction", "Historical"],
     pages: 180,
     rating: 4.5,
-    total_comments: 0
+    total_comments: 0,
+    total_reads:1
   },
   {
     title: "1984",
@@ -34,7 +35,8 @@ const dummyBooks = [
     categories: ["Dystopian", "Science Fiction", "Classic"],
     pages: 328,
     rating: 4.8,
-    total_comments: 0
+    total_comments: 0,
+    total_reads:12
   },
   {
     title: "To Kill a Mockingbird",
@@ -49,7 +51,8 @@ const dummyBooks = [
     categories: ["Historical Fiction", "Classic", "Drama"],
     pages: 281,
     rating: 4.9,
-    total_comments: 0
+    total_comments: 0,
+    total_reads:0
   },
   {
     title: "Dune",
@@ -64,7 +67,8 @@ const dummyBooks = [
     categories: ["Science Fiction", "Fantasy", "Adventure"],
     pages: 412,
     rating: 4.7,
-    total_comments: 0
+    total_comments: 0,
+    total_reads:5
   },
   {
     title: "The Hobbit",
@@ -79,34 +83,7 @@ const dummyBooks = [
     categories: ["Fantasy", "Adventure", "Classic"],
     pages: 310,
     rating: 4.8,
-    total_comments: 0
+    total_comments: 0,
+    total_reads:6
   }
 ];
-
-const seedDatabase = async () => {
-  try {
-   // 1. Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("Connected to MongoDB...");
-
-    // 2. DROP the old collection (destroys old validation rules)
-    try {
-      await Book.collection.drop();
-      console.log("Old collection and validation rules completely dropped.");
-    } catch (err) {
-      console.log("Collection doesn't exist yet, moving on.");
-    }
-
-    // 3. Insert the new books
-    await Book.insertMany(dummyBooks);
-    console.log("New dummy books inserted successfully!");
-
-    // 4. Exit the script
-    process.exit();
-  } catch (error) {
-    console.error("Error seeding database:", error);
-    process.exit(1);
-  }
-};
-
-seedDatabase();

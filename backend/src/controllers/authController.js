@@ -59,6 +59,11 @@ const register = async (req, res) => {
 
     const token = createToken(user.id);
 
+    await Activity.create({
+      type: "register",
+      user: `${user.first_name} ${user.second_name}`
+    });
+
     res.status(201).json({
       token,
       user: {

@@ -151,12 +151,77 @@ function StatCard({ value, label }) {
   );
 }
 
+function timeAgo(dateString) {
+  const date = new Date(dateString);
+  const seconds = Math.floor((new Date() - date) / 1000);
+  
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return "Just now";
+}
+
 export default function AdminDashboard() {
-  const { data, loading } = useDashboardData();
+  const { data } = useDashboardData();
   const [panel, setPanel] = useState(0);
   const [animating, setAnimating] = useState(false);
   const [animDir, setAnimDir] = useState("forward");
+  const [loading, setLoading] = useState(true);
+  const [topbooks, setBooks] = useState([]);
+  const [activities, setActivities] = useState([]);
   const navigate = useNavigate();
+    const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    window.location.href = "/login";
+  };
+
+   useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5000/api/books/popular?limit=5', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if(!res.ok){
+            throw new Error("API error");
+        }
+        const topbooks = await res.json();
+        setBooks(topbooks);
+      } catch (err) {
+        console.error("Failed to fetch books", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBooks();
+
+    const fetchActivities = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5000/api/activities/recent', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setActivities(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch activities", err);
+      }
+    };
+    fetchActivities();
+
+  }, []);
 
   const goTo = (idx) => {
     if (animating || idx === panel) return;
@@ -187,7 +252,7 @@ export default function AdminDashboard() {
 
       {loading && <div className="adm-loading">Loading...</div>}
 
-      {data && (
+      {data && topbooks && (
         <>
           {/* ── Sliding Panel ── */}
           <div className="adm-slider-wrap">
@@ -231,7 +296,7 @@ export default function AdminDashboard() {
                       <div className="adm-card">
                         <h2 className="adm-card-title">Most Popular Books</h2>
                         <ol className="adm-book-list">
-                          {data.popularBooks.map((book, i) => (
+                          {topbooks.map((book, i) => (
                             <li key={book._id} className="adm-book-item">
                               <span className="adm-book-rank">{i + 1}.</span>
                               <div className="adm-book-info">
@@ -243,48 +308,49 @@ export default function AdminDashboard() {
                                 </span>
                               </div>
                               <span className="adm-book-count">
-                                {book.totalComments}
+                                {book.total_reads}
                               </span>
                             </li>
                           ))}
                         </ol>
                       </div>
-                      <div className="adm-card">
+                    <div className="adm-card">
                         <h2 className="adm-card-title">Recent Activity</h2>
                         <ul className="adm-activity-list">
-                          {data.recentActivity.map((act) => (
-                            <li key={act.id} className="adm-activity-item">
-                              <span className="act-icon">
-                                {activityIcons[act.type] || "•"}
-                              </span>
-                              <div className="adm-act-text">
-                                {act.type === "borrow" && (
-                                  <span>
-                                    <strong>{act.user}</strong> borrowed{" "}
-                                    <em>{act.book}</em>
-                                  </span>
-                                )}
-                                {act.type === "register" && (
-                                  <span>
-                                    New user <strong>{act.user}</strong>{" "}
-                                    registered
-                                  </span>
-                                )}
-                                {act.type === "add" && (
-                                  <span>
-                                    Book <em>{act.book}</em> added by Admin
-                                  </span>
-                                )}
-                                {act.type === "review" && (
-                                  <span>
-                                    <strong>{act.user}</strong> reviewed{" "}
-                                    <em>{act.book}</em>
-                                  </span>
-                                )}
-                              </div>
-                              <span className="adm-act-time">{act.time}</span>
-                            </li>
-                          ))}
+                          {activities.length === 0 ? (
+                            <p style={{fontSize: "13px", color: "#6b4c22"}}>No recent activity.</p>
+                          ) : (
+                            activities.map((act) => (
+                              <li key={act._id} className="adm-activity-item">
+                                <span className="act-icon">
+                                  {activityIcons[act.type] || "•"}
+                                </span>
+                                <div className="adm-act-text">
+                                  {act.type === "borrow" && (
+                                    <span>
+                                      <strong>{act.user}</strong> borrowed <em>{act.book}</em>
+                                    </span>
+                                  )}
+                                  {act.type === "register" && (
+                                    <span>
+                                      New user <strong>{act.user}</strong> registered
+                                    </span>
+                                  )}
+                                  {act.type === "add" && (
+                                    <span>
+                                      Book <em>{act.book}</em> added by Admin
+                                    </span>
+                                  )}
+                                  {act.type === "review" && (
+                                    <span>
+                                      <strong>{act.user}</strong> reviewed <em>{act.book}</em>
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="adm-act-time">{timeAgo(act.createdAt)}</span>
+                              </li>
+                            ))
+                          )}
                         </ul>
                       </div>
                     </div>
@@ -321,6 +387,12 @@ export default function AdminDashboard() {
             >
               + Manage Books
             </button>
+          </div>
+
+          <div className="footer-actions">
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
           </div>
         </>
       )}
