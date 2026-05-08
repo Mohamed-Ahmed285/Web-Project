@@ -505,6 +505,12 @@ export default function BookDetails() {
 
   const bookId = id;
 
+  const [toast, setToast] = useState(null);
+
+  // track reading status
+  const [readingStatus, setReadingStatus] = useState(null);
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
+
   const [rawBook, setRawBook] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -516,6 +522,13 @@ export default function BookDetails() {
 
   const [reviewText, setReviewText] = useState("");
   const [showCollectionModal, setShowCollectionModal] = useState(false);
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -535,6 +548,13 @@ export default function BookDetails() {
           throw new Error("Book not found or server error");
         }
         const data = await response.json();
+
+        const statusResponse = await fetch(`http://localhost:5000/api/books/status/${bookId}`, { headers });
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          setReadingStatus(statusData);
+        }
+
         setRawBook(data);
       } catch (err) {
         if (err.message === "No token") {
@@ -550,6 +570,48 @@ export default function BookDetails() {
 
     fetchBook();
   }, [bookId]);
+
+
+  const handleStatusChange = async (key) => {
+    const newStatus = readingStatus === key ? null : key;
+
+    const previousStatus = readingStatus;
+    setReadingStatus(newStatus);
+    setIsStatusLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/books/status`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ bookId, status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update status in DB");
+      }
+
+      // ADD THIS: Success toast
+      setToast({
+        type: "success",
+        msg: newStatus ? "Reading status updated ✓" : "Reading status cleared ✓",
+      });
+
+    } catch (error) {
+      console.error("Error updating status:", error);
+      setReadingStatus(previousStatus);
+      setToast({
+        type: "warn",
+        msg: "Failed to update reading status. Please try again.",
+      });
+    } finally {
+      setIsStatusLoading(false);
+    }
+  };
+
 
   // Handle Loading & Error States
   if (isLoading) {
@@ -662,9 +724,9 @@ export default function BookDetails() {
   };
 
   const STATUS_OPTIONS = [
-    { key: "read", label: "✓ Read" },
+    { key: "completed", label: "✓ Completed" },
     { key: "reading", label: "📖 Currently Reading" },
-    { key: "want", label: "🔖 Want to Read" },
+    { key: "want-to-read", label: "🔖 Want to Read" },
   ];
 
   const DETAIL_CELLS = [
@@ -676,6 +738,13 @@ export default function BookDetails() {
 
   return (
     <PageLayout>
+
+      {toast && (
+        <div className={`atc-toast atc-toast--${toast.type}`} style={{ position: "fixed", zIndex: 9999 }}>
+          {toast.msg}
+        </div>
+      )}
+
       <div className="bd-page">
         {/* ── Back button ── */}
         <button className="bd-back-btn" onClick={() => navigate("/dashboard")}>
@@ -771,20 +840,24 @@ export default function BookDetails() {
               Reading Status
             </p>
             <div className="bd-status-group">
-              {STATUS_OPTIONS.map(({ key, label }) => (
-                <button
-                  key={key}
-                  className={`bd-status-btn${bookData.readingStatus === key ? " active" : ""}`}
-                  onClick={() =>
-                    patchBook(bookId, {
-                      readingStatus:
-                        bookData.readingStatus === key ? null : key,
-                    })
-                  }
-                >
-                  {label}
-                </button>
-              ))}
+              {STATUS_OPTIONS.map(({ key, label }) => {
+                const isUnselected = readingStatus && readingStatus !== key;
+
+                return (
+                  <button
+                    key={key}
+                    disabled={isStatusLoading}
+                    className={`bd-status-btn${readingStatus === key ? " active" : ""}`}
+                    onClick={() => handleStatusChange(key)}
+                    style={{
+                      opacity: isStatusLoading ? 0.6 : (isUnselected ? 0.4 : 1),
+                      transition: "opacity 0.2s ease"
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

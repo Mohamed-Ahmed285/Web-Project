@@ -1,5 +1,6 @@
 import Book from "../models/Book.js";
 import Activity from "../models/Activity.js";
+import UserBook from "../models/UserBook.js";
 
 const getPopularBooks = async (req, res) => {
   try {
@@ -182,4 +183,75 @@ const deleteBook = async (req, res) => {
   }
 };
 
-export { getBooks, getBookById, createBook, deleteBook, getPopularBooks };
+// get reading status for a book
+const getReadingStatus = async (req, res) => {
+  const bookId = req.params.book_id;
+  const userId = req.user.id;
+  try {
+    const userBook = await UserBook.findOne({ userId, bookId });
+    const status = userBook ? userBook.status : null;
+    res.status(200).json(status);
+  } catch (err) {
+    console.error("Error fetching reading status:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const updateReadingStatus = async (req, res) => {
+  const { bookId, status } = req.body;
+  const userId = req.user.id;
+
+  try {
+    if (!status) {
+      await UserBook.findOneAndDelete({ userId, bookId });
+
+      return res.json({
+        message: "Status removed",
+        status: null,
+      });
+    }
+
+    const validStatuses = ["reading", "completed", "want-to-read"];
+
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        message: "Invalid status value",
+      });
+    }
+
+    const userBook = await UserBook.findOneAndUpdate(
+      { userId, bookId },
+      {
+        userId,
+        bookId,
+        status,
+      },
+      {
+        returnDocument: "after",
+        upsert: true,
+        runValidators: true,
+      },
+    );
+
+    res.json({
+      message: "Status updated successfully",
+      status: userBook.status,
+    });
+  } catch (error) {
+    console.error("Error updating status:", error);
+
+    res.status(500).json({
+      message: "Server error updating status",
+    });
+  }
+};
+
+export {
+  getBooks,
+  getBookById,
+  createBook,
+  deleteBook,
+  getPopularBooks,
+  getReadingStatus,
+  updateReadingStatus,
+};

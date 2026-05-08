@@ -6,6 +6,8 @@ import {
   deleteBook,
   getBookById,
   getPopularBooks,
+  getReadingStatus,
+  updateReadingStatus,
 } from "../controllers/bookController.js";
 
 const router = express.Router();
@@ -18,6 +20,12 @@ router.get("/popular", authMiddleware, getPopularBooks);
 
 //========================get one book by id=============================
 router.get("/:id", authMiddleware, getBookById);
+
+// get book status
+router.get("/status/:book_id", authMiddleware, getReadingStatus);
+
+// change status for a book
+router.post("/status", authMiddleware, updateReadingStatus);
 
 //=============================== admin ==============================
 // POST /api/books
