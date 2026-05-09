@@ -507,6 +507,11 @@ export default function BookDetails() {
 
   const [toast, setToast] = useState(null);
 
+  // reviews
+  const [comments, setComments] = useState([]);
+  const [isCommentsLoading, setIsCommentsLoading] = useState(true);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
   // track reading status
   const [readingStatus, setReadingStatus] = useState(null);
   const [isStatusLoading, setIsStatusLoading] = useState(false);
@@ -531,6 +536,29 @@ export default function BookDetails() {
   }, [toast]);
 
   useEffect(() => {
+    const fetchComments = async () => {
+      setIsCommentsLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const response = await fetch(`http://localhost:5000/api/user-books/reviews/${bookId}`, { headers });
+
+        if (!response.ok) throw new Error("Failed to fetch comments");
+
+        const data = await response.json();
+        setComments(data);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      } finally {
+        setIsCommentsLoading(false);
+      }
+    };
+
+    fetchComments();
+  }, [bookId]);
+
+  useEffect(() => {
     const fetchBook = async () => {
       setIsLoading(true);
       try {
@@ -540,6 +568,7 @@ export default function BookDetails() {
         const headers = {
           Authorization: `Bearer ${token}`,
         };
+        // Fetch book details
         const response = await fetch(
           `http://localhost:5000/api/books/${bookId}`,
           { headers },
@@ -549,10 +578,18 @@ export default function BookDetails() {
         }
         const data = await response.json();
 
-        const statusResponse = await fetch(`http://localhost:5000/api/books/status/${bookId}`, { headers });
+        // Fetch user's reading status for this book
+        const statusResponse = await fetch(`http://localhost:5000/api/user-books/status/${bookId}`, { headers });
         if (statusResponse.ok) {
           const statusData = await statusResponse.json();
           setReadingStatus(statusData);
+        }
+
+        // fetch user rating for this movie
+        const ratingResponse = await fetch(`http://localhost:5000/api/user-books/rate/${bookId}`, { headers });
+        if (ratingResponse.ok) {
+          const ratingData = await ratingResponse.json();
+          patchBook(bookId, { userRating: ratingData });
         }
 
         setRawBook(data);
@@ -581,7 +618,7 @@ export default function BookDetails() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/books/status`, {
+      const response = await fetch(`http://localhost:5000/api/user-books/status`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -701,27 +738,62 @@ export default function BookDetails() {
   }
 
   // Live computed values from context
-  const avgRating = getAvgRating(bookId);
-  const totalReviews = getTotalReviews(bookId);
+  // const avgRating = getAvgRating(bookId);
+  // const totalReviews = getTotalReviews(bookId);
   const relatedBooks = book.relatedIds
     .map((rid) => TOP_BOOKS.find((b) => b.id === rid))
     .filter(Boolean);
 
-  const handleSubmitReview = () => {
-    if (!reviewText.trim()) return;
-    addReview(bookId, {
-      id: Date.now(),
-      user: "You",
-      text: reviewText.trim(),
-      rating: bookData.userRating,
-      date: new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }),
-    });
-    setReviewText("");
+  const handleSubmitReview = async () => {
+    // if it didn't change
+    if (!reviewText && !bookData.userRating) return;
+
+    setIsSubmittingReview(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`http://localhost:5000/api/user-books/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          bookId: bookId,
+          rate: bookData.userRating || null,
+          comment: reviewText.trim(),
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to submit review");
+
+      const newCommentData = await response.json();
+
+      if (reviewText.trim()) {
+        const formattedNewComment = {
+          comment: reviewText.trim(),
+          rate: bookData.userRating || null,
+          first_name: localStorage.getItem("first_name") || "You",
+          second_name: localStorage.getItem("second_name") || "",
+          createdAt: newCommentData.createdAt || new Date().toISOString(),
+          isTheUser: true,
+        };
+
+        setComments((prev) => [formattedNewComment, ...prev]);
+        setReviewText("");
+      }
+
+      setToast({ type: "success", msg: "Review submitted ✓" });
+
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      setToast({ type: "warn", msg: "Failed to submit review. Try again." });
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
+
 
   const STATUS_OPTIONS = [
     { key: "completed", label: "✓ Completed" },
@@ -907,17 +979,18 @@ export default function BookDetails() {
             <button
               className="bd-review-submit-btn"
               onClick={handleSubmitReview}
+              disabled={isSubmittingReview}
+              style={{ opacity: isSubmittingReview ? 0.6 : 1 }}
             >
-              Submit Review
+              {isSubmittingReview ? "Submitting..." : "Submit Review"}
             </button>
           </div>
         </div>
 
-        {/* ── Reviews list — per-book from context ── */}
         <div>
           <p className="bd-section-heading">
             Reader Reviews
-            {bookData.reviews.length > 0 && (
+            {comments.length > 0 && (
               <span
                 style={{
                   fontFamily: "'EB Garamond', serif",
@@ -927,35 +1000,62 @@ export default function BookDetails() {
                   color: "#7a5c2e",
                 }}
               >
-                ({bookData.reviews.length} submitted)
+                ({comments.length} submitted)
               </span>
             )}
           </p>
-          {bookData.reviews.length === 0 ? (
+
+          {isCommentsLoading ? (
+            <p className="bd-no-reviews">Loading reviews...</p>
+          ) : comments.length === 0 ? (
             <p className="bd-no-reviews">
               No reviews yet. Be the first to share your thoughts!
             </p>
           ) : (
             <div className="bd-reviews-list">
-              {bookData.reviews.map((rev) => (
-                <div key={rev.id} className="bd-review-card">
-                  <div className="bd-review-header">
-                    <span className="bd-review-user">{rev.user}</span>
-                    {rev.rating > 0 && (
+              {comments.map((rev, index) => (
+                /* Using index as a fallback key since the backend doesn't send a unique ID per comment */
+                <div key={index} className="bd-review-card">
+                  <div className="bd-review-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+                    <div>
+                      {/* Name */}
+                      <span className="bd-review-user" style={{ fontWeight: "bold" }}>
+                        {rev.first_name} {rev.second_name}
+                        {rev.isTheUser && " (You)"}
+                      </span>
+
+                      {/* Date */}
+                      {rev.createdAt && (
+                        <span
+                          className="bd-review-date"
+                          style={{ fontSize: "13px", color: "#6d6d6d", marginLeft: "10px" }}
+                        >
+                          {new Date(rev.createdAt).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Stars */}
+                    {rev.rate > 0 && (
                       <div className="bd-review-mini-stars">
                         {[1, 2, 3, 4, 5].map((n) => (
                           <span
                             key={n}
-                            className={`star${n <= rev.rating ? "" : " empty"}`}
+                            className={`star${n <= rev.rate ? "" : " empty"}`}
                           >
                             ★
                           </span>
                         ))}
                       </div>
                     )}
-                    <span className="bd-review-date">{rev.date}</span>
                   </div>
-                  <p className="bd-review-text">{rev.text}</p>
+
+                  <p className="bd-review-text">{rev.comment}</p>
                 </div>
               ))}
             </div>

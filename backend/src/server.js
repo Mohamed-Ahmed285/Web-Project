@@ -31,7 +31,6 @@ app.use("/api/collections", collectionRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/user-books", userBookRoutes);
 
-
 app.get("/", (req, res) => {
   res.status(200).send("Book Tracker API is running smoothly!");
 });

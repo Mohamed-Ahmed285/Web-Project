@@ -58,7 +58,7 @@ export default function Register() {
       setIsLoading(true);
       setServerError("");
       try {
-        const {...payload } = values;
+        const { ...payload } = values;
         const response = await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -67,10 +67,12 @@ export default function Register() {
         const data = await response.json();
         if (!response.ok) {
           setServerError(data.message || "Registration failed.");
-        } else{
+        } else {
           if (data.token) {
             localStorage.setItem("token", data.token);
             localStorage.setItem("role", data.user.is_admin ? "admin" : "user");
+            localStorage.setItem("first_name", data.user.first_name);
+            localStorage.setItem("second_name", data.user.second_name);
             if (data.user.is_admin) {
               navigate("/admin");
             } else {

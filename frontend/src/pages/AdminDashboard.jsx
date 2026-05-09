@@ -143,10 +143,10 @@ function MiniChart({ data }) {
 function StatCard({ value, label }) {
   return (
     <div className="adm-stat-card">
-      
-        <div className="adm-stat-value">{value}</div>
-        <div className="adm-stat-label">{label}</div>
-    
+
+      <div className="adm-stat-value">{value}</div>
+      <div className="adm-stat-label">{label}</div>
+
     </div>
   );
 }
@@ -154,7 +154,7 @@ function StatCard({ value, label }) {
 function timeAgo(dateString) {
   const date = new Date(dateString);
   const seconds = Math.floor((new Date() - date) / 1000);
-  
+
   let interval = seconds / 31536000;
   if (interval > 1) return Math.floor(interval) + " years ago";
   interval = seconds / 2592000;
@@ -177,13 +177,13 @@ export default function AdminDashboard() {
   const [topbooks, setBooks] = useState([]);
   const [activities, setActivities] = useState([]);
   const navigate = useNavigate();
-    const handleLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     window.location.href = "/login";
   };
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchBooks = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -192,8 +192,8 @@ export default function AdminDashboard() {
             'Authorization': `Bearer ${token}`
           }
         });
-        if(!res.ok){
-            throw new Error("API error");
+        if (!res.ok) {
+          throw new Error("API error");
         }
         const topbooks = await res.json();
         setBooks(topbooks);
@@ -314,11 +314,11 @@ export default function AdminDashboard() {
                           ))}
                         </ol>
                       </div>
-                    <div className="adm-card">
+                      <div className="adm-card">
                         <h2 className="adm-card-title">Recent Activity</h2>
                         <ul className="adm-activity-list">
                           {activities.length === 0 ? (
-                            <p style={{fontSize: "13px", color: "#6b4c22"}}>No recent activity.</p>
+                            <p style={{ fontSize: "13px", color: "#6b4c22" }}>No recent activity.</p>
                           ) : (
                             activities.map((act) => (
                               <li key={act._id} className="adm-activity-item">
@@ -390,9 +390,9 @@ export default function AdminDashboard() {
           </div>
 
           <div className="footer-actions">
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
+            <button className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
           </div>
         </>
       )}

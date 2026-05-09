@@ -49,7 +49,7 @@ function CollectionCard({ col }) {
   );
 }
 
-function ScrollRow({ children , visibleCount = 4 }) {
+function ScrollRow({ children, visibleCount = 4 }) {
   const [index, setIndex] = useState(0);
   const items = React.Children.toArray(children);
   const total = items.length;
@@ -88,6 +88,8 @@ export default function UserDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("first_name");
+    localStorage.removeItem("second_name");
     window.location.href = "/login";
   };
 
@@ -105,20 +107,18 @@ export default function UserDashboard() {
         const [booksRes, collectionsRes, userRes] = await Promise.all([
           fetch("http://localhost:5000/api/books", { headers }),
           fetch("http://localhost:5000/api/collections", { headers }),
-          fetch("http://localhost:5000/api/user/me", { headers }),
         ]);
 
-        if (!booksRes.ok || !collectionsRes.ok || !userRes.ok) {
+        if (!booksRes.ok || !collectionsRes.ok) {
           throw new Error("API error");
         }
 
         const booksData = await booksRes.json();
         const collectionsData = await collectionsRes.json();
-        const userData = await userRes.json();
 
         setBooks(booksData);
         setCollections(collectionsData);
-        setUserName(userData.first_name || "Reader");
+        setUserName(localStorage.getItem("first_name") || "Reader");
       } catch (error) {
         console.error("Error fetching data:", error);
         if (error.message === "API error") {
@@ -294,7 +294,7 @@ const s = {
     borderRadius: "18px",
     textAlign: "center",
     margin: "12px 60px",
-    
+
     // background: "rgba(255,249,236,0.75)",
   },
   emptyCollectionText: {
