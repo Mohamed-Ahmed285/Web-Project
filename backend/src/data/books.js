@@ -5,85 +5,84 @@ import Book from "../models/Book.js";
 // Load environment variables so we can get your MONGO_URI
 dotenv.config();
 
-const dummyBooks = [
-  {
-    title: "The Great Gatsby",
-    author: "F. Scott Fitzgerald",
-    cover_image: {
-      small: "https://covers.openlibrary.org/b/id/8445722-S.jpg",
-      medium: "https://covers.openlibrary.org/b/id/8445722-M.jpg",
-      large: "https://covers.openlibrary.org/b/id/8445722-L.jpg"
-    },
-    published_year: 1925,
-    description: "A tragic story of Jay Gatsby, a self-made millionaire, and his pursuit of Daisy Buchanan, a wealthy young woman whom he loved in his youth.",
-    categories: ["Classic", "Fiction", "Historical"],
-    pages: 180,
-    rating: 4.5,
-    total_comments: 0,
-    total_reads:1
-  },
-  {
-    title: "1984",
-    author: "George Orwell",
-    cover_image: {
-      small: "https://covers.openlibrary.org/b/id/153586-S.jpg",
-      medium: "https://covers.openlibrary.org/b/id/153586-M.jpg",
-      large: "https://covers.openlibrary.org/b/id/153586-L.jpg"
-    },
-    published_year: 1949,
-    description: "A dystopian social science fiction novel and cautionary tale about the dangers of totalitarianism, mass surveillance, and repressive regimentation of persons and behaviors.",
-    categories: ["Dystopian", "Science Fiction", "Classic"],
-    pages: 328,
-    rating: 4.8,
-    total_comments: 0,
-    total_reads:12
-  },
-  {
-    title: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    cover_image: {
-      small: "https://covers.openlibrary.org/b/id/8259431-S.jpg",
-      medium: "https://covers.openlibrary.org/b/id/8259431-M.jpg",
-      large: "https://covers.openlibrary.org/b/id/8259431-L.jpg"
-    },
-    published_year: 1960,
-    description: "The story of a young girl's coming-of-age in a sleepy Southern town and the crisis of conscience that rocked it, exploring themes of racial injustice and loss of innocence.",
-    categories: ["Historical Fiction", "Classic", "Drama"],
-    pages: 281,
-    rating: 4.9,
-    total_comments: 0,
-    total_reads:0
-  },
-  {
-    title: "Dune",
-    author: "Frank Herbert",
-    cover_image: {
-      small: "https://covers.openlibrary.org/b/id/13147154-S.jpg",
-      medium: "https://covers.openlibrary.org/b/id/13147154-M.jpg",
-      large: "https://covers.openlibrary.org/b/id/13147154-L.jpg"
-    },
-    published_year: 1965,
-    description: "Set on the desert planet Arrakis, Dune is the story of the boy Paul Atreides, heir to a noble family tasked with ruling an inhospitable world where the only thing of value is the 'spice' melange.",
-    categories: ["Science Fiction", "Fantasy", "Adventure"],
-    pages: 412,
-    rating: 4.7,
-    total_comments: 0,
-    total_reads:5
-  },
-  {
-    title: "The Hobbit",
-    author: "J.R.R. Tolkien",
-    cover_image: {
-      small: "https://covers.openlibrary.org/b/id/8406786-S.jpg",
-      medium: "https://covers.openlibrary.org/b/id/8406786-M.jpg",
-      large: "https://covers.openlibrary.org/b/id/8406786-L.jpg"
-    },
-    published_year: 1937,
-    description: "A fantasy novel following the quest of home-loving Bilbo Baggins to win a share of the treasure guarded by Smaug the dragon.",
-    categories: ["Fantasy", "Adventure", "Classic"],
-    pages: 310,
-    rating: 4.8,
-    total_comments: 0,
-    total_reads:6
-  }
+const rawBooks = [
+  ["The Great Gatsby", "F. Scott Fitzgerald", "Classic", "Historical"],
+  ["1984", "George Orwell", "Dystopian", "Science Fiction"],
+  ["To Kill a Mockingbird", "Harper Lee", "Historical Fiction", "Drama"],
+  ["Dune", "Frank Herbert", "Science Fiction", "Adventure"],
+  ["The Hobbit", "J.R.R. Tolkien", "Fantasy", "Adventure"],
+  ["Pride and Prejudice", "Jane Austen", "Romance", "Classic"],
+  ["The Catcher in the Rye", "J.D. Salinger", "Fiction", "Coming-of-age"],
+  ["Fahrenheit 451", "Ray Bradbury", "Dystopian", "Science Fiction"],
+  ["Moby-Dick", "Herman Melville", "Adventure", "Classic"],
+  ["War and Peace", "Leo Tolstoy", "Historical Fiction", "Classic"],
+  ["The Odyssey", "Homer", "Epic", "Poetry"],
+  ["Jane Eyre", "Charlotte Brontë", "Gothic", "Romance"],
+  ["The Lord of the Rings", "J.R.R. Tolkien", "Fantasy", "Adventure"],
+  ["Animal Farm", "George Orwell", "Satire", "Fiction"],
+  ["Brave New World", "Aldous Huxley", "Dystopian", "Science Fiction"],
+  ["The Chronicles of Narnia", "C.S. Lewis", "Fantasy", "Children"],
+  ["The Grapes of Wrath", "John Steinbeck", "Historical Fiction", "Classic"],
+  ["Catch-22", "Joseph Heller", "Satire", "War"],
+  ["Wuthering Heights", "Emily Brontë", "Gothic", "Romance"],
+  ["The Diary of a Young Girl", "Anne Frank", "Biography", "Non-fiction"],
+  ["Frankenstein", "Mary Shelley", "Horror", "Science Fiction"],
+  ["Dracula", "Bram Stoker", "Horror", "Gothic"],
+  ["The Picture of Dorian Gray", "Oscar Wilde", "Philosophical", "Classic"],
+  ["A Tale of Two Cities", "Charles Dickens", "Historical Fiction", "Classic"],
+  ["Great Expectations", "Charles Dickens", "Coming-of-age", "Classic"],
+  ["Les Misérables", "Victor Hugo", "Historical Fiction", "Classic"],
+  ["Crime and Punishment", "Fyodor Dostoevsky", "Psychological", "Fiction"],
+  ["The Brothers Karamazov", "Fyodor Dostoevsky", "Philosophical", "Classic"],
+  ["Anna Karenina", "Leo Tolstoy", "Romance", "Tragedy"],
+  ["The Bell Jar", "Sylvia Plath", "Semi-autobiographical", "Fiction"],
+  ["The Alchemist", "Paulo Coelho", "Fantasy", "Quest"],
+  ["One Hundred Years of Solitude", "Gabriel García Márquez", "Magical Realism", "Classic"],
+  ["The Kite Runner", "Khaled Hosseini", "Historical Fiction", "Drama"],
+  ["Slaughterhouse-Five", "Kurt Vonnegut", "Satire", "Science Fiction"],
+  ["The Handmaid's Tale", "Margaret Atwood", "Dystopian", "Feminist"],
+  ["The Secret History", "Donna Tartt", "Mystery", "Thriller"],
+  ["A Clockwork Orange", "Anthony Burgess", "Dystopian", "Satire"],
+  ["The Road", "Cormac McCarthy", "Post-apocalyptic", "Fiction"],
+  ["No Country for Old Men", "Cormac McCarthy", "Thriller", "Crime"],
+  ["Blood Meridian", "Cormac McCarthy", "Western", "Historical"],
+  ["The Martian", "Andy Weir", "Science Fiction", "Thriller"],
+  ["Project Hail Mary", "Andy Weir", "Science Fiction", "Mystery"],
+  ["Ender's Game", "Orson Scott Card", "Science Fiction", "Action"],
+  ["Neuromancer", "William Gibson", "Cyberpunk", "Science Fiction"],
+  ["Snow Crash", "Neal Stephenson", "Cyberpunk", "Satire"],
+  ["Foundation", "Isaac Asimov", "Science Fiction", "Epic"],
+  ["I, Robot", "Isaac Asimov", "Science Fiction", "Short Stories"],
+  ["The Hitchhiker's Guide to the Galaxy", "Douglas Adams", "Comedy", "Science Fiction"],
+  ["Good Omens", "Neil Gaiman", "Comedy", "Fantasy"],
+  ["American Gods", "Neil Gaiman", "Fantasy", "Mythology"]
 ];
+
+// Helper to generate random numbers for realistic dummy data
+const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const randomFloat = (min, max) => (Math.random() * (max - min) + min).toFixed(1);
+
+const dummyBooks = rawBooks.map((data, index) => {
+  // Generate a sequential cover ID so they all load distinct (or fallback) placeholder images
+  const coverId = 8259431 + index; 
+  
+  return {
+    title: data[0],
+    author: data[1],
+    cover_image: {
+      small: `https://covers.openlibrary.org/b/id/${coverId}-S.jpg`,
+      medium: `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`,
+      large: `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`
+    },
+    published_year: randomInt(1800, 2023),
+    description: `A fascinating read titled ${data[0]}, written by the acclaimed ${data[1]}. This book explores themes of ${data[2]} and is considered a staple in its genre.`,
+    categories: [data[2], data[3]],
+    pages: randomInt(150, 1200),
+    language: "English",
+    rating: parseFloat(randomFloat(3.5, 5.0)), // Ratings between 3.5 and 5.0
+    total_comments: randomInt(0, 45),
+    total_reads: randomInt(0, 500) // Highly varied reads to test your Popular Books widget sorting
+  };
+});
+
+export default dummyBooks;

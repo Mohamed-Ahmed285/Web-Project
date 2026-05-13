@@ -30,6 +30,46 @@ const getBooks = async (req, res) => {
   }
 };
 
+const getBooksPaginated = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+
+    const skip = (page - 1) * limit;
+
+    let dbQuery = {};
+    if (search) {
+      dbQuery = {
+        $or: [
+          { title: { $regex: search, $options: "i" } }, // 'i' makes it case-insensitive
+          { author: { $regex: search, $options: "i" } }
+        ]
+      };
+    }
+
+    const [books, totalBooks] = await Promise.all([
+      Book.find(dbQuery)
+        .sort({ _id: -1 })
+        .skip(skip)
+        .limit(limit),
+      Book.countDocuments(dbQuery)
+    ]);
+
+    const totalPages = Math.ceil(totalBooks / limit);
+
+    res.json({
+      books,
+      currentPage: page,
+      totalPages,
+      totalBooks
+    });
+  } catch (error) {
+    console.error("Error fetching books:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 const createBook = async (req, res) => {
   try {
     const { title, author, published_year, categories, pages, rating } =
@@ -183,4 +223,4 @@ const deleteBook = async (req, res) => {
   }
 };
 
-export { getBooks, getBookById, createBook, deleteBook, getPopularBooks };
+export { getBooks, getBookById, createBook, deleteBook, getPopularBooks, getBooksPaginated };
