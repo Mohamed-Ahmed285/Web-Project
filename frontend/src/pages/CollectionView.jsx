@@ -1,17 +1,8 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
-import { TOP_BOOKS } from "../data/books";
 import { useBookStore } from "../context/BookStoreContext";
 
-// ── Static seed data (used only by BookStoreContext to initialise state) ───────
-export const COLLECTIONS = [
-  { id: 1, name: "Collection 1", books: [TOP_BOOKS[2], TOP_BOOKS[1], TOP_BOOKS[0], TOP_BOOKS[3]] },
-  { id: 2, name: "Collection 2", books: [TOP_BOOKS[3], TOP_BOOKS[0]] },
-  { id: 3, name: "Collection 3", books: [TOP_BOOKS[4], TOP_BOOKS[5]] },
-  { id: 4, name: "Collection 4", books: [TOP_BOOKS[5], TOP_BOOKS[4]] },
-  { id: 5, name: "Collection 5", books: [TOP_BOOKS[0], TOP_BOOKS[1]] },
-];
 
 function BookCard({ book }) {
   const [hovered, setHovered] = useState(false);
@@ -28,10 +19,10 @@ function BookCard({ book }) {
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => navigate(`/book/${book.id}`)}
+      onClick={() => navigate(`/book/${book._id}`)}
     >
       <div style={s.coverWrap}>
-        <img src={book.cover} alt={book.title} style={s.coverImg} />
+        <img src={book.cover_image.medium} alt={book.title} style={s.coverImg} />
       </div>
       <p style={s.bookTitle}>{book.title}</p>
       <p style={s.bookAuthor}>{book.author}</p>
@@ -43,10 +34,27 @@ function BookCard({ book }) {
 export default function CollectionView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const collectionId = Number(id);
-  const { collections } = useBookStore();
+  const { collections, isCollectionsLoading } = useBookStore();
 
-  const collection = collections.find((c) => c.id === collectionId);
+  const collection = collections.find((c) => c._id === id);
+
+
+  if (isCollectionsLoading) {
+    return (
+      <PageLayout>
+        <div style={s.loadingWrapper}>
+          <style>{`
+            @keyframes ud-spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div style={s.spinner} />
+          <p style={s.loadingText}>Loading your dashboard...</p>
+        </div>
+      </PageLayout>
+    );
+  }
 
   if (!collection) {
     return (
@@ -83,9 +91,9 @@ export default function CollectionView() {
           <div style={s.collectionIconRow}>
             {collection.books.slice(0, 3).map((b, i) => (
               <img
-                key={b.id}
-                src={b.cover}
-                alt=""
+                key={b._id}
+                src={b.cover_image.medium}
+                alt={b.title}
                 style={{
                   ...s.headerThumb,
                   left: `${i * 30}px`,
@@ -114,7 +122,7 @@ export default function CollectionView() {
         ) : (
           <div style={s.grid}>
             {collection.books.map((book) => (
-              <BookCard key={book.id} book={book} />
+              <BookCard key={book._id} book={book} />
             ))}
           </div>
         )}
@@ -272,5 +280,30 @@ const s = {
     fontSize: "16px",
     color: "#7a5c2e",
     fontStyle: "italic",
+  },
+  loadingWrapper: {
+    minHeight: "calc(100vh - 80px)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "22px",
+    color: "#f5e4b9",
+    textAlign: "center",
+  },
+  spinner: {
+    width: "80px",
+    height: "80px",
+    borderRadius: "50%",
+    border: "8px solid #d0b17a",
+    borderTopColor: "#26160b",
+    animation: "ud-spin 1s linear infinite",
+    boxShadow: "0 0 0 5px rgba(255, 255, 255, 0.03), inset 0 0 0 1px rgba(255,255,255,0.15)",
+  },
+  loadingText: {
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "16px",
+    color: "#26160b",
+    maxWidth: "320px",
   },
 };
