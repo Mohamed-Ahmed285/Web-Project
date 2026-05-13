@@ -8,6 +8,8 @@ function BookCard({ book }) {
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
 
+  const categories = book.genre?.[0] || book.categories?.[0];
+
   return (
     <div
       style={{
@@ -26,7 +28,7 @@ function BookCard({ book }) {
       </div>
       <p style={s.bookTitle}>{book.title}</p>
       <p style={s.bookAuthor}>{book.author}</p>
-      {book.genre && <span style={s.genreBadge}>{book.genre}</span>}
+      {categories && <span style={s.genreBadge}>{categories}</span>}
     </div>
   );
 }

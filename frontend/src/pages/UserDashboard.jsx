@@ -5,6 +5,7 @@ import SearchCatalog from "./SearchCatalog";
 import PageLayout from "./PageLayout";
 import { useNavigate } from "react-router-dom";
 import { useBookStore } from "../context/BookStoreContext";
+import emptyCollectionImg from "../assets/CollectionIsEmpty.png";
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 function BookCard({ book }) {
@@ -31,20 +32,45 @@ function BookCard({ book }) {
 }
 
 function CollectionCard({ col }) {
-  const [hovered] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
+
+  const placeholderImg = emptyCollectionImg;
+
   return (
     <div
-      style={{
-        ...s.collCard,
-        transform: hovered ? "translateY(-5px) scale(1.02)" : "none",
-      }}
+      style={s.collCard}
       onClick={() => navigate(`/collection/${col._id}`)}
     >
       <div style={s.collCovers}>
-        <img src={col.img} alt={col.name} style={s.singleCollImage} />
+        {/* Check if the collection has books */}
+        {col.books && col.books.length > 0 ? (
+          col.books.slice(0, 2).map((b, i) => (
+            <img
+              key={b._id || i}
+              src={b.cover_image.medium || placeholderImg}
+              alt={b.title || "Book"}
+              style={{
+                ...s.collCover,
+                left: `${i * 38}px`,
+                zIndex: i === 0 ? 1 : 2,
+                transform: i === 0 ? "rotate(-6deg)" : "rotate(3deg)",
+              }}
+            />
+          ))
+        ) : (
+          < img
+            src={placeholderImg}
+            alt="Empty Collection"
+            style={{
+              ...s.collCover,
+              left: "20px",
+              transform: "rotate(-2deg)",
+              opacity: 0.7,
+            }}
+          />
+        )}
       </div>
-
       <p style={s.collName}>{col.name}</p>
     </div>
   );

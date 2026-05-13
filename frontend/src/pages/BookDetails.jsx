@@ -51,7 +51,7 @@ function BookHeader({ book, onClose }) {
   return (
     <div className="atc-header">
       <div className="atc-header-book">
-        <img src={book.cover} alt={book.title} className="atc-thumb" />
+        <img src={book.cover_image.medium} alt={book.title} className="atc-thumb" />
         <div>
           <p className="atc-header-eyebrow">Add to collection</p>
           <p className="atc-header-title">{book.title}</p>
@@ -60,7 +60,7 @@ function BookHeader({ book, onClose }) {
       </div>
       <button className="atc-close-btn" onClick={onClose} aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
     </div>
@@ -118,7 +118,7 @@ function AddToCollectionModal({ book, onClose }) {
 
     const col = collections.find((c) => c._id === selected);
 
-    const result = await addBookToCollection(selected, book._id);
+    const result = await addBookToCollection(selected, book);
 
     if (result === "duplicate") {
       setToast({
@@ -126,8 +126,6 @@ function AddToCollectionModal({ book, onClose }) {
         msg: `"${book.title}" is already in "${col?.name}".`,
       });
     } else if (result === "added") {
-      console.log(col);
-      console.log(selected);
       setToast({
         type: "success",
         msg: `Added to "${col?.name}" ✓`,
@@ -220,7 +218,7 @@ function AddToCollectionModal({ book, onClose }) {
         {/* ══════════ LIST VIEW ══════════ */}
         {view === "list" && (
           <>
-            <BookHeader />
+            <BookHeader book={book} onClose={onClose} />
             <div className="atc-divider" />
 
             {/* Tab-style switcher */}
@@ -331,7 +329,7 @@ function AddToCollectionModal({ book, onClose }) {
         {/* ══════════ CREATE VIEW ══════════ */}
         {view === "create" && (
           <>
-            <BookHeader />
+            <BookHeader book={book} onClose={onClose} />
             <div className="atc-divider" />
 
             {/* Tab-style switcher */}

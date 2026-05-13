@@ -146,9 +146,12 @@ export function BookStoreProvider({ children }) {
     }
   }, [addReview]);
 
-  const addBookToCollection = useCallback(async (collectionId, bookId) => {
+  const addBookToCollection = useCallback(async (collectionId, bookObj) => {
     try {
       const token = localStorage.getItem("token");
+
+      const bookId = bookObj._id;
+
       const response = await fetch(`http://localhost:5000/api/collections/addBook/${collectionId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -160,7 +163,7 @@ export function BookStoreProvider({ children }) {
       if (!response.ok) throw new Error(data.message || "Failed to add book");
 
       setCollections((prev) => prev.map((c) =>
-        c._id === collectionId ? { ...c, books: [...(c.books || []), bookId] } : c
+        c._id === collectionId ? { ...c, books: [...(c.books || []), bookObj] } : c
       ));
       return "added";
     } catch (error) {
@@ -168,7 +171,6 @@ export function BookStoreProvider({ children }) {
       return "error";
     }
   }, []);
-
   const createCollection = useCallback(async (name, seedBookId = null) => {
     try {
       const token = localStorage.getItem("token");
