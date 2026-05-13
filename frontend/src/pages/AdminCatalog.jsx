@@ -1,24 +1,24 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PageLayout from "./PageLayout";
 
 // ── Scoring / ranking helper ───────────────────────────────────────────────────
-function scoreBook(book, q) {
-  if (!q) return 0; // no query → all equal, keep original order
-  const title  = book.title.toLowerCase();
-  const author = book.author.toLowerCase();
-  const query  = q.toLowerCase();
+// function scoreBook(book, q) {
+//   if (!q) return 0; // no query → all equal, keep original order
+//   const title  = book.title.toLowerCase();
+//   const author = book.author.toLowerCase();
+//   const query  = q.toLowerCase();
 
-  if (title === query)            return 0;
-  if (title.startsWith(query))    return 1;
-  if (title.includes(query))      return 2;
-  if (author.includes(query))     return 3;
+//   if (title === query)            return 0;
+//   if (title.startsWith(query))    return 1;
+//   if (title.includes(query))      return 2;
+//   if (author.includes(query))     return 3;
 
-  let matched = 0;
-  for (const ch of query) if (title.includes(ch)) matched++;
-  if (matched > query.length * 0.5) return 4 + (query.length - matched);
+//   let matched = 0;
+//   for (const ch of query) if (title.includes(ch)) matched++;
+//   if (matched > query.length * 0.5) return 4 + (query.length - matched);
 
-  return 999;
-}
+//   return 999;
+// }
 
 // ── Add Book Dialog ────────────────────────────────────────────────────────────
 function AddBookDialog({ onClose, onAdd, isAdding }) {
@@ -88,39 +88,58 @@ function AddBookDialog({ onClose, onAdd, isAdding }) {
 export default function AdminDashboard() {
   const [books, setBooks]       = useState([]);
   const [query, setQuery]       = useState("");
+
+  const [page, setPage]         = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
     const fetchBooks = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/books', {
+        // Add query parameters to the URL
+        const res = await fetch(`http://localhost:5000/api/books/search?search=${query}&page=${page}&limit=10`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
         const data = await res.json();
-        setBooks(data);
+        
+        // Update state based on our new backend payload structure
+      if (data.books) {
+          setBooks(data.books);
+          setTotalPages(data.totalPages);
+        } else if (Array.isArray(data)) {
+          setBooks(data);
+          setTotalPages(1);
+        } else {
+          setBooks([]);
+        }
       } catch (err) {
         console.error("Failed to fetch books", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchBooks();
-  }, []);
 
-  const filtered = useMemo(() => {
-    const q = query.trim();
-    const filteredbooks = Array.isArray(books) ? books : [];
-    return [...filteredbooks]
-      .map(b => ({ book: b, score: scoreBook(b, q) }))
-      .filter(x => x.score < 999)
-      .sort((a, b) => a.score - b.score)
-      .map(x => x.book);
-  }, [books, query]);
+    // Debounce the search so it doesn't slam your database on every keystroke
+    const timeoutId = setTimeout(() => fetchBooks(), 300);
+    return () => clearTimeout(timeoutId);
+  }, [page, query]);
+
+  // const filtered = useMemo(() => {
+  //   const q = query.trim();
+  //   const filteredbooks = Array.isArray(books) ? books : [];
+  //   return [...filteredbooks]
+  //     .map(b => ({ book: b, score: scoreBook(b, q) }))
+  //     .filter(x => x.score < 999)
+  //     .sort((a, b) => a.score - b.score)
+  //     .map(x => x.book);
+  // }, [books, query]);
 
 const handleDelete = async (id) => {
     if(!window.confirm("Are you sure you want to delete this book?")) return;
@@ -193,7 +212,10 @@ const handleAdd = async (newBookData) => {
           <input
             style={s.searchInput}
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={e => {
+              setQuery(e.target.value);
+              setPage(1); // Reset to page 1 on new search
+            }}
             placeholder="Search your book..."
             spellCheck={false}
           />
@@ -212,10 +234,10 @@ const handleAdd = async (newBookData) => {
       <div style={s.listBox}>
         {loading ? (
            <p style={s.empty}>Loading books from database...</p>
-        ) : filtered.length === 0 ? (
+        ) : books.length === 0 ? (
           <p style={s.empty}>No books found.</p>
         ) : (
-          filtered.map(book => (
+          books.map(book => (
             <div key={book._id} style={s.bookRow}>
               <img 
                 src={book.cover_image?.small || "https://via.placeholder.com/80x115?text=No+Cover"} 
@@ -240,7 +262,29 @@ const handleAdd = async (newBookData) => {
           ))
         )}
       </div>
-
+        {!loading && totalPages > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", gap: "15px",alignItems: "center" }}>
+          <button 
+            disabled={page === 1} 
+            onClick={() => setPage(p => p - 1)}
+            style={{ padding: "8px 16px", cursor: page === 1 ? "not-allowed" : "pointer", borderRadius: "8px", border: "1px solid #7a5c2e", background: "transparent", color: "#7a5c2e" }}
+          >
+            Previous
+          </button>
+          
+          <span style={{ fontFamily: "'EB Garamond', serif", color: "#5a3e1b", fontSize: "15px" }}>
+            Page {page} of {totalPages}
+          </span>
+          
+          <button 
+            disabled={page === totalPages} 
+            onClick={() => setPage(p => p + 1)}
+            style={{ padding: "8px 16px", cursor: page === totalPages ? "not-allowed" : "pointer", borderRadius: "8px", border: "1px solid #7a5c2e", background: "transparent", color: "#7a5c2e" }}
+          >
+            Next
+          </button>
+        </div>
+      )}
       {/* ── Dialog ── */}
       {showDialog && (
         <AddBookDialog onClose={() => setShowDialog(false)} onAdd={handleAdd} isAdding={isAdding} />
@@ -329,12 +373,11 @@ const s = {
   },
   listBox: {
     flex: 1,
-    overflowY: "auto",
+    overflowY: "scroll",
     display: "flex",
     flexDirection: "column",
     gap: "12px",
-    paddingRight: "4px",
-    // give it a max height so it scrolls within the panel
+    padding: "30px",
     maxHeight: "calc(100vh - 280px)",
   },
   empty: {

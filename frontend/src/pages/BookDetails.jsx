@@ -48,6 +48,26 @@ function StarRatingInput({ value, onChange }) {
   );
 }
 
+function BookHeader({ book, onClose }) {
+  return (
+    <div className="atc-header">
+      <div className="atc-header-book">
+        <img src={book.cover} alt={book.title} className="atc-thumb" />
+        <div>
+          <p className="atc-header-eyebrow">Add to collection</p>
+          <p className="atc-header-title">{book.title}</p>
+          <p className="atc-header-author">by {book.author}</p>
+        </div>
+      </div>
+      <button className="atc-close-btn" onClick={onClose} aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 // ── Add-to-Collection Modal ───────────────────────────────────────────────────
 // view: "list" → browse & pick existing  |  "create" → name + instant-add
 function AddToCollectionModal({ book, onClose }) {
@@ -219,31 +239,31 @@ function AddToCollectionModal({ book, onClose }) {
   };
 
   /* ──────────────── shared book-header snippet ──────────────── */
-  const BookHeader = () => (
-    <div className="atc-header">
-      <div className="atc-header-book">
-        <img src={book.cover_image.medium} alt={book.title} className="atc-thumb" />
-        <div>
-          <p className="atc-header-eyebrow">Add to collection</p>
-          <p className="atc-header-title">{book.title}</p>
-          <p className="atc-header-author">by {book.author}</p>
-        </div>
-      </div>
-      <button className="atc-close-btn" onClick={onClose} aria-label="Close">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          width="14"
-          height="14"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-    </div>
-  );
+  // const BookHeader = () => (
+  //   <div className="atc-header">
+  //     <div className="atc-header-book">
+  //       <img src={book.cover_image.medium} alt={book.title} className="atc-thumb" />
+  //       <div>
+  //         <p className="atc-header-eyebrow">Add to collection</p>
+  //         <p className="atc-header-title">{book.title}</p>
+  //         <p className="atc-header-author">by {book.author}</p>
+  //       </div>
+  //     </div>
+  //     <button className="atc-close-btn" onClick={onClose} aria-label="Close">
+  //       <svg
+  //         viewBox="0 0 24 24"
+  //         fill="none"
+  //         stroke="currentColor"
+  //         strokeWidth="2.5"
+  //         width="14"
+  //         height="14"
+  //       >
+  //         <line x1="18" y1="6" x2="6" y2="18" />
+  //         <line x1="6" y1="6" x2="18" y2="18" />
+  //       </svg>
+  //     </button>
+  //   </div>
+  // );
 
   /* ──────────────── render ──────────────── */
   return (
