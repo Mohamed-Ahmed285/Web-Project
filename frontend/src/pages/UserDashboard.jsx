@@ -59,16 +59,26 @@ function CollectionCard({ col }) {
             />
           ))
         ) : (
-          < img
-            src={placeholderImg}
-            alt="Empty Collection"
-            style={{
-              ...s.collCover,
-              left: "20px",
-              transform: "rotate(-2deg)",
-              opacity: 0.7,
-            }}
-          />
+          // < img
+          //   src={placeholderImg}
+          //   alt="Empty Collection"
+          //   style={{
+          //     ...s.collCover,
+          //     left: "20px",
+          //     transform: "rotate(-2deg)",
+          //     opacity: 0.7,
+          //   }}
+          // />
+          <div class="empty-collection-card">
+        <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            
+            <circle cx="18" cy="6" r="4.5" fill="rgba(255, 248, 220, 0.9)"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 6h4m-2-2v4"></path>
+        </svg>
+
+        <h2 class="empty-title">This collection is empty</h2>
+    </div>
         )}
       </div>
       <p style={s.collName}>{col.name}</p>
