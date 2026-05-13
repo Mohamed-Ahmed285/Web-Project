@@ -1,5 +1,6 @@
 import UserBook from "../models/UserBook.js";
 import Review from "../models/Review.js";
+import Book from "../models/Book.js";
 
 const getReadingStatus = async (req, res) => {
   const bookId = req.params.book_id;
@@ -65,7 +66,6 @@ const updateReadingStatus = async (req, res) => {
 
 const getReviews = async (req, res) => {
   try {
-    // sort it (the new first)
     const reviews = await Review.find({ bookId: req.params.bookId }).populate(
       "userId",
       "first_name second_name",
@@ -77,18 +77,22 @@ const getReviews = async (req, res) => {
       if (review.comments && review.comments.length > 0) {
         const reversedComments = [...review.comments].reverse();
 
-        reversedComments.forEach((comment) => {
+        reversedComments.forEach((commentObj) => {
           commentsWithRatings.push({
-            comment: comment,
+            comment: commentObj.text,
             rate: review.rate || null,
             first_name: review.userId.first_name,
             second_name: review.userId.second_name,
-            createdAt: review.createdAt,
+            createdAt: commentObj.createdAt,
             isTheUser: review.userId._id.toString() === req.user.id,
           });
         });
       }
     });
+
+    commentsWithRatings.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+    );
 
     res.status(200).json(commentsWithRatings);
   } catch (error) {
@@ -99,17 +103,29 @@ const getReviews = async (req, res) => {
 };
 
 const addReview = async (req, res) => {
-  const { bookId, rate, comment } = req.body;
+  let { rate, comment } = req.body;
   const userId = req.user.id;
+  const bookId = req.params.bookId;
+  let book = await Book.findById(bookId);
+
+  rate = parseInt(rate);
 
   try {
     let review = await Review.findOne({ userId, bookId });
 
     if (review) {
+      let FirstReview = false;
+      if (review.rate == null && rate) {
+        FirstReview = true;
+        book.total_reviews += 1;
+        await book.save();
+      }
       if (rate) review.rate = rate;
-      if (comment) review.comments.push(comment);
+      if (comment)
+        review.comments.push({ text: comment, createdAt: new Date() });
       await review.save();
-      return res.status(200).json(review);
+
+      return res.status(200).json({ review, FirstReview: FirstReview });
     } else {
       if (!rate && !comment) {
         return res
@@ -121,11 +137,14 @@ const addReview = async (req, res) => {
         userId,
         bookId,
         rate: rate || null,
-        comments: comment ? [comment] : [],
+        comments: comment ? [{ text: comment, createdAt: new Date() }] : [],
       });
+      book.total_reviews += rate ? 1 : 0;
+
+      await book.save();
 
       await review.save();
-      return res.status(201).json(review);
+      return res.status(201).json({ review, FirstReview: rate ? true : false });
     }
   } catch (error) {
     res

@@ -4,6 +4,7 @@ import React from "react";
 import SearchCatalog from "./SearchCatalog";
 import PageLayout from "./PageLayout";
 import { useNavigate } from "react-router-dom";
+import { useBookStore } from "../context/BookStoreContext";
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 function BookCard({ book }) {
@@ -82,7 +83,7 @@ function ScrollRow({ children, visibleCount = 4 }) {
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function UserDashboard() {
   const [books, setBooks] = useState([]);
-  const [collections, setCollections] = useState([]);
+  const { collections, isCollectionsLoading } = useBookStore();
   const [userName, setUserName] = useState("Reader");
   const [isLoading, setIsLoading] = useState(true);
   const handleLogout = () => {
@@ -104,20 +105,15 @@ export default function UserDashboard() {
           Authorization: `Bearer ${token}`,
         };
 
-        const [booksRes, collectionsRes, userRes] = await Promise.all([
-          fetch("http://localhost:5000/api/books", { headers }),
-          fetch("http://localhost:5000/api/collections", { headers }),
-        ]);
+        const booksRes = await fetch("http://localhost:5000/api/books", { headers });
 
-        if (!booksRes.ok || !collectionsRes.ok) {
+        if (!booksRes.ok) {
           throw new Error("API error");
         }
 
         const booksData = await booksRes.json();
-        const collectionsData = await collectionsRes.json();
 
         setBooks(booksData);
-        setCollections(collectionsData);
         setUserName(localStorage.getItem("first_name") || "Reader");
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -134,7 +130,7 @@ export default function UserDashboard() {
     fetchDashboardData();
   }, []);
 
-  if (isLoading) {
+  if (isCollectionsLoading || isLoading) {
     return (
       <PageLayout>
         <div style={s.loadingWrapper}>

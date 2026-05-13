@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, redirect } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
-import { TOP_BOOKS } from "../data/books";
 import { useBookStore } from "../context/BookStoreContext";
 import "./BookDetails.css";
 
@@ -51,10 +50,8 @@ function StarRatingInput({ value, onChange }) {
 // ── Add-to-Collection Modal ───────────────────────────────────────────────────
 // view: "list" → browse & pick existing  |  "create" → name + instant-add
 function AddToCollectionModal({ book, onClose }) {
-  const { addBookToCollection, createCollection } = useBookStore();
 
-  const [collections, setCollections] = useState([]);
-  const [isFetching, setIsFetching] = useState(true);
+  const { collections, isCollectionsLoading, addBookToCollection, createCollection } = useBookStore();
 
   /* ── shared ── */
   const overlayRef = useRef(null);
@@ -71,37 +68,6 @@ function AddToCollectionModal({ book, onClose }) {
   const [createBusy, setCreateBusy] = useState(false);
   const nameInputRef = useRef(null);
 
-
-  // fetch collections
-  useEffect(() => {
-    const fetchCollections = async () => {
-      setIsFetching(true);
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token");
-
-        const headers = {
-          Authorization: `Bearer ${token}`,
-        };
-
-        const res = await fetch(`http://localhost:5000/api/collections/${book._id}`, { headers });
-        if (!res.ok) throw new Error("Failed to fetch collections");
-
-        const data = await res.json();
-        setCollections(data);
-      } catch (error) {
-        if (error.message === "No token") {
-          localStorage.removeItem("token");
-          redirect("/login");
-        }
-        console.error("Error fetching collections:", error);
-      } finally {
-        setIsFetching(false);
-      }
-    };
-
-    fetchCollections();
-  }, []);
 
   /* ── close on Escape ── */
   useEffect(() => {
@@ -130,81 +96,52 @@ function AddToCollectionModal({ book, onClose }) {
 
     setListBusy(true);
 
-    const col = collections.find((c) => c.id === selected);
+    const col = collections.find((c) => c._id === selected);
 
-    try {
-      const token = localStorage.getItem("token");
+    const result = await addBookToCollection(selected, book._id);
 
-      const response = await fetch(
-        `http://localhost:5000/api/collections/addBook/${selected}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ bookId: book._id }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (
-        response.status === 400 &&
-        data.message === "Book already in collection"
-      ) {
-        setToast({
-          type: "warn",
-          msg: `"${book.title}" is already in "${col?.name}".`,
-        });
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to add book");
-      }
-
+    if (result === "duplicate") {
+      setToast({
+        type: "warn",
+        msg: `"${book.title}" is already in "${col?.name}".`,
+      });
+    } else if (result === "added") {
+      console.log(col);
+      console.log(selected);
       setToast({
         type: "success",
         msg: `Added to "${col?.name}" ✓`,
       });
-
       setTimeout(onClose, 1500);
-    } catch (error) {
-      console.error("Error adding book to collection:", error);
-
+    } else {
       setToast({
         type: "warn",
         msg: "Something went wrong. Try again.",
       });
-    } finally {
-      setListBusy(false);
     }
+
+    setListBusy(false);
   };
 
-
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const trimmed = newName.trim();
     if (!trimmed) {
       setNameError("Collection name can't be empty.");
       return;
     }
-    const duplicate = collections.some(
-      (c) => c.name.toLowerCase() === trimmed.toLowerCase(),
-    );
-    if (duplicate) {
-      setNameError(`A collection named "${trimmed}" already exists.`);
-      return;
-    }
+
     setCreateBusy(true);
-    const result = createCollection(trimmed, book);
-    if (result.status === "duplicate_name") {
-      setNameError(`A collection named "${trimmed}" already exists.`);
-      setCreateBusy(false);
-      return;
+    setNameError("");
+
+    const result = await createCollection(trimmed, book._id);
+
+    if (result.status === "created") {
+      setToast({ type: "success", msg: `"${trimmed}" created & book added ✓` });
+      setTimeout(onClose, 1600);
+    } else {
+      setNameError(result.message || "Something went wrong.");
     }
-    setToast({ type: "success", msg: `"${trimmed}" created & book added ✓` });
-    setTimeout(onClose, 1600);
+    setCreateBusy(false);
   };
 
   const switchToCreate = () => {
@@ -287,8 +224,16 @@ function AddToCollectionModal({ book, onClose }) {
 
             {/* Collection list */}
             <div className="atc-list">
-              {isFetching ? (
-                <div className="atc-empty-state"><p>Loading collections...</p></div>
+              {isCollectionsLoading ? (
+                <div className="atc-empty-state">
+                  <style>{`
+                    @keyframes pulse {
+                      0%, 100% { opacity: 1; }
+                      50% { opacity: 0.5; }
+                    }
+                  `}</style>
+                  <p style={{ animation: "pulse 1.5s infinite" }}>Loading collections...</p>
+                </div>
               ) : collections.length === 0 ? (
                 <div className="atc-empty-state">
                   <p>No collections yet.</p>
@@ -298,12 +243,12 @@ function AddToCollectionModal({ book, onClose }) {
                 </div>
               ) : (
                 collections.map((col) => {
-                  const alreadyIn = col.alreadyIn;
-                  const isSelected = selected === col.id;
+                  const alreadyIn = col.books && col.books.some(b => b === book._id || b._id === book._id);
+                  const isSelected = selected === col._id;
 
                   return (
                     <button
-                      key={col.id}
+                      key={col._id}
                       className={[
                         "atc-row",
                         isSelected ? "atc-row--selected" : "",
@@ -311,7 +256,7 @@ function AddToCollectionModal({ book, onClose }) {
                       ].join(" ").trim()}
                       onClick={() => {
                         if (alreadyIn) return;
-                        setSelected(col.id);
+                        setSelected(col._id);
                       }}
                     >
                       {col.img && (
@@ -328,7 +273,7 @@ function AddToCollectionModal({ book, onClose }) {
                       <div className="atc-row-info">
                         <span className="atc-row-name">{col.name}</span>
                         <span className="atc-row-meta">
-                          {col.bookCount} book{col.bookCount !== 1 ? "s" : ""}
+                          {col.books.length} book{col.books.length !== 1 ? "s" : ""}
                         </span>
                       </div>
 
@@ -346,6 +291,7 @@ function AddToCollectionModal({ book, onClose }) {
                 })
               )}
             </div>
+
             {/* Footer */}
             <div className="atc-footer">
               <button className="atc-btn atc-btn--ghost" onClick={onClose}>
@@ -435,7 +381,7 @@ function AddToCollectionModal({ book, onClose }) {
                       setNameError("");
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") handleCreate();
+                      if (e.key === "Enter" && newName.trim() && !createBusy) handleCreate();
                     }}
                   />
                   {newName && (
@@ -470,7 +416,7 @@ function AddToCollectionModal({ book, onClose }) {
                 <div className="atc-existing-names">
                   <span className="atc-existing-label">Existing:</span>
                   {collections.map((c) => (
-                    <span key={c.id} className="atc-existing-chip">
+                    <span key={c._id} className="atc-existing-chip">
                       {c.name}
                     </span>
                   ))}
@@ -508,12 +454,10 @@ export default function BookDetails() {
   const [toast, setToast] = useState(null);
 
   // reviews
-  const [comments, setComments] = useState([]);
-  const [isCommentsLoading, setIsCommentsLoading] = useState(true);
+  // const [isCommentsLoading, setIsCommentsLoading] = useState(true);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   // track reading status
-  const [readingStatus, setReadingStatus] = useState(null);
   const [isStatusLoading, setIsStatusLoading] = useState(false);
 
   const [rawBook, setRawBook] = useState(null);
@@ -521,8 +465,14 @@ export default function BookDetails() {
   const [error, setError] = useState(null);
 
   // ── Context (per-book persistent store) ──────────────────────────────────
-  const { getBook, patchBook, addReview, getAvgRating, getTotalReviews } =
-    useBookStore();
+  const {
+    getBook,
+    patchBook,
+    fetchUserBookData,
+    updateReadingStatus,
+    submitReview
+  } = useBookStore();
+
   const bookData = getBook(bookId);
 
   const [reviewText, setReviewText] = useState("");
@@ -536,27 +486,11 @@ export default function BookDetails() {
   }, [toast]);
 
   useEffect(() => {
-    const fetchComments = async () => {
-      setIsCommentsLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    if (bookId) {
+      fetchUserBookData(bookId);
+    }
+  }, [bookId, fetchUserBookData]);
 
-        const response = await fetch(`http://localhost:5000/api/user-books/reviews/${bookId}`, { headers });
-
-        if (!response.ok) throw new Error("Failed to fetch comments");
-
-        const data = await response.json();
-        setComments(data);
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      } finally {
-        setIsCommentsLoading(false);
-      }
-    };
-
-    fetchComments();
-  }, [bookId]);
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -565,40 +499,19 @@ export default function BookDetails() {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token");
 
-        const headers = {
-          Authorization: `Bearer ${token}`,
-        };
-        // Fetch book details
-        const response = await fetch(
-          `http://localhost:5000/api/books/${bookId}`,
-          { headers },
-        );
-        if (!response.ok) {
-          throw new Error("Book not found or server error");
-        }
+        const response = await fetch(`http://localhost:5000/api/books/${bookId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error("Book not found or server error");
+
         const data = await response.json();
-
-        // Fetch user's reading status for this book
-        const statusResponse = await fetch(`http://localhost:5000/api/user-books/status/${bookId}`, { headers });
-        if (statusResponse.ok) {
-          const statusData = await statusResponse.json();
-          setReadingStatus(statusData);
-        }
-
-        // fetch user rating for this movie
-        const ratingResponse = await fetch(`http://localhost:5000/api/user-books/rate/${bookId}`, { headers });
-        if (ratingResponse.ok) {
-          const ratingData = await ratingResponse.json();
-          patchBook(bookId, { userRating: ratingData });
-        }
-
         setRawBook(data);
       } catch (err) {
         if (err.message === "No token") {
           localStorage.removeItem("token");
           navigate("/login");
         }
-        console.error("Failed to fetch book:", err);
         setError(err.message);
       } finally {
         setIsLoading(false);
@@ -606,49 +519,30 @@ export default function BookDetails() {
     };
 
     fetchBook();
-  }, [bookId]);
+  }, [bookId, navigate]);
 
 
   const handleStatusChange = async (key) => {
-    const newStatus = readingStatus === key ? null : key;
-
-    const previousStatus = readingStatus;
-    setReadingStatus(newStatus);
+    // Toggle off if they click the already active status
+    const newStatus = bookData.readingStatus === key ? null : key;
     setIsStatusLoading(true);
 
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/user-books/status`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ bookId, status: newStatus }),
-      });
+    const { success } = await updateReadingStatus(bookId, newStatus);
 
-      if (!response.ok) {
-        throw new Error("Failed to update status in DB");
-      }
-
-      // ADD THIS: Success toast
+    if (success) {
       setToast({
         type: "success",
         msg: newStatus ? "Reading status updated ✓" : "Reading status cleared ✓",
       });
-
-    } catch (error) {
-      console.error("Error updating status:", error);
-      setReadingStatus(previousStatus);
+    } else {
       setToast({
         type: "warn",
         msg: "Failed to update reading status. Please try again.",
       });
-    } finally {
-      setIsStatusLoading(false);
     }
-  };
 
+    setIsStatusLoading(false);
+  };
 
   // Handle Loading & Error States
   if (isLoading) {
@@ -707,10 +601,8 @@ export default function BookDetails() {
     language: rawBook.language || "English",
     relatedIds: rawBook.relatedIds || [],
     rating: rawBook.rating || 0,
-    totalComments: rawBook.total_comments || 0,
+    totalReviews: rawBook.total_reviews || 0,
   };
-
-  // const book = TOP_BOOKS.find((b) => b.id === bookId);
 
   if (!book) {
     return (
@@ -740,58 +632,31 @@ export default function BookDetails() {
   // Live computed values from context
   // const avgRating = getAvgRating(bookId);
   // const totalReviews = getTotalReviews(bookId);
-  const relatedBooks = book.relatedIds
-    .map((rid) => TOP_BOOKS.find((b) => b.id === rid))
-    .filter(Boolean);
+  const relatedBooks = []
 
   const handleSubmitReview = async () => {
-    // if it didn't change
     if (!reviewText && !bookData.userRating) return;
 
     setIsSubmittingReview(true);
 
-    try {
-      const token = localStorage.getItem("token");
+    const { success, FirstReview } = await submitReview(
+      bookId,
+      bookData.userRating || null,
+      reviewText
+    );
 
-      const response = await fetch(`http://localhost:5000/api/user-books/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          bookId: bookId,
-          rate: bookData.userRating || null,
-          comment: reviewText.trim(),
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to submit review");
-
-      const newCommentData = await response.json();
-
-      if (reviewText.trim()) {
-        const formattedNewComment = {
-          comment: reviewText.trim(),
-          rate: bookData.userRating || null,
-          first_name: localStorage.getItem("first_name") || "You",
-          second_name: localStorage.getItem("second_name") || "",
-          createdAt: newCommentData.createdAt || new Date().toISOString(),
-          isTheUser: true,
-        };
-
-        setComments((prev) => [formattedNewComment, ...prev]);
-        setReviewText("");
-      }
-
+    if (success) {
       setToast({ type: "success", msg: "Review submitted ✓" });
-
-    } catch (error) {
-      console.error("Error submitting review:", error);
+      setReviewText("");
+      setRawBook((prev) => ({
+        ...prev,
+        total_reviews: (FirstReview ? (prev.total_reviews || 0) + 1 : prev.total_reviews),
+      }));
+    } else {
       setToast({ type: "warn", msg: "Failed to submit review. Try again." });
-    } finally {
-      setIsSubmittingReview(false);
     }
+
+    setIsSubmittingReview(false);
   };
 
 
@@ -854,8 +719,8 @@ export default function BookDetails() {
               <StarsDisplay rating={book.rating} />
               <span className="bd-rating-num">{Number(book.rating).toFixed(1)}</span>
               <span className="bd-reviews-count">
-                ({book.totalComments.toLocaleString()} review
-                {book.totalComments !== 1 ? "s" : ""})
+                ({book.totalReviews.toLocaleString()} review
+                {book.totalReviews !== 1 ? "s" : ""})
               </span>
             </div>
 
@@ -913,13 +778,13 @@ export default function BookDetails() {
             </p>
             <div className="bd-status-group">
               {STATUS_OPTIONS.map(({ key, label }) => {
-                const isUnselected = readingStatus && readingStatus !== key;
+                const isUnselected = bookData.readingStatus && bookData.readingStatus !== key;
 
                 return (
                   <button
                     key={key}
                     disabled={isStatusLoading}
-                    className={`bd-status-btn${readingStatus === key ? " active" : ""}`}
+                    className={`bd-status-btn${bookData.readingStatus === key ? " active" : ""}`}
                     onClick={() => handleStatusChange(key)}
                     style={{
                       opacity: isStatusLoading ? 0.6 : (isUnselected ? 0.4 : 1),
@@ -990,7 +855,7 @@ export default function BookDetails() {
         <div>
           <p className="bd-section-heading">
             Reader Reviews
-            {comments.length > 0 && (
+            {bookData.reviews.length > 0 && (
               <span
                 style={{
                   fontFamily: "'EB Garamond', serif",
@@ -1000,20 +865,18 @@ export default function BookDetails() {
                   color: "#7a5c2e",
                 }}
               >
-                ({comments.length} submitted)
+                ({bookData.reviews.length} submitted)
               </span>
             )}
           </p>
 
-          {isCommentsLoading ? (
-            <p className="bd-no-reviews">Loading reviews...</p>
-          ) : comments.length === 0 ? (
+          {bookData.reviews.length === 0 ? (
             <p className="bd-no-reviews">
               No reviews yet. Be the first to share your thoughts!
             </p>
           ) : (
             <div className="bd-reviews-list">
-              {comments.map((rev, index) => (
+              {bookData.reviews.map((rev, index) => (
                 /* Using index as a fallback key since the backend doesn't send a unique ID per comment */
                 <div key={index} className="bd-review-card">
                   <div className="bd-review-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1095,6 +958,8 @@ export default function BookDetails() {
     </PageLayout>
   );
 }
+
+
 const s = {
   spinner: {
     width: "80px",

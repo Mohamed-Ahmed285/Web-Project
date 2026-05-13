@@ -4,11 +4,14 @@ import {
   getMyCollections,
   getUserCollectionsForBook,
   addBookToCollection,
+  createCollectionWithBook,
 } from "../controllers/collectionController.js";
 
 const router = express.Router();
 
 router.get("/", authMiddleware, getMyCollections);
+
+router.post("/:bookId", authMiddleware, createCollectionWithBook);
 
 router.get("/:id", authMiddleware, getUserCollectionsForBook);
 

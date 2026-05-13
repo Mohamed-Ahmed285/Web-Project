@@ -13,7 +13,7 @@ const bookSchema = new mongoose.Schema(
     cover_image: {
       small: { type: String, default: "default-s.jpg" },
       medium: { type: String, default: "default-m.jpg" },
-      large: { type: String, default: "default-l.jpg" }
+      large: { type: String, default: "default-l.jpg" },
     },
     published_year: {
       type: Number,
@@ -42,15 +42,15 @@ const bookSchema = new mongoose.Schema(
       min: [1, "Rating cannot be below 1"],
       max: [5, "Rating cannot exceed 5"],
     },
-    total_comments: {
+    total_reviews: {
       type: Number,
       required: [true, "Total comments count is required"],
       default: 0,
     },
     total_reads: {
-    type: Number, 
-    default: 0,
-    index: -1 //field pre-sorted
+      type: Number,
+      default: 0,
+      index: -1, //field pre-sorted
     },
   },
   {

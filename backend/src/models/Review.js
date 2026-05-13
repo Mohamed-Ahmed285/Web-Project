@@ -13,7 +13,12 @@ const reviewSchema = new mongoose.Schema(
       required: true,
     },
     rate: { type: Number, min: 1, max: 5 },
-    comments: [{ type: String }],
+    comments: [
+      {
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true, collection: "reviews" },
 );

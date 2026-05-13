@@ -20,7 +20,7 @@ router.post("/status", authMiddleware, updateReadingStatus);
 router.get("/reviews/:bookId", authMiddleware, getReviews);
 
 // add review
-router.post("/reviews", authMiddleware, addReview);
+router.post("/review/:bookId", authMiddleware, addReview);
 
 router.get("/rate/:bookId", authMiddleware, getRate);
 
