@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect } from "react";
+import { useState, useEffect , useRef} from "react";
 import React from "react";
 import SearchCatalog from "./SearchCatalog";
 import PageLayout from "./PageLayout";
@@ -140,12 +140,143 @@ function ScrollRow({ children, visibleCount = 4 }) {
   );
 }
 
+function CreateCollectionModal({ onClose }) {
+  const { createCollection } = useBookStore();
+  const overlayRef = useRef(null);
+  
+  const [newName, setNewName] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [createBusy, setCreateBusy] = useState(false);
+  const nameInputRef = useRef(null);
+
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+
+  useEffect(() => {
+    setTimeout(() => nameInputRef.current?.focus(), 60);
+  }, []);
+
+  const handleCreate = async () => {
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      setNameError("Collection name can't be empty.");
+      return;
+    }
+
+    setCreateBusy(true);
+    setNameError("");
+
+    // Create an empty collection (no book ID passed)
+    const result = await createCollection(trimmed);
+
+    if (result && result.status === "created") {
+      onClose();
+    } else {
+      setNameError(result?.message || "Something went wrong.");
+    }
+    setCreateBusy(false);
+  };
+
+  return (
+    <div
+      className="atc-overlay"
+      ref={overlayRef}
+      onClick={(e) => {
+        if (e.target === overlayRef.current) onClose();
+      }}
+    >
+      <div className="atc-modal" role="dialog" aria-modal="true" style={{ maxWidth: "420px" }}>
+        {/* Header */}
+        <div style={{ padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(101,67,33,0.15)" }}>
+          <h3 style={{ margin: 0, fontFamily: "'Cinzel', serif", fontSize: "18px", color: "#2c1a07" }}>
+            Create New Collection
+          </h3>
+          <button className="atc-close-btn" onClick={onClose} aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="atc-create-body" style={{ padding: "24px" }}>
+          {/* Name field */}
+          <div className="atc-field">
+            <label className="atc-label" htmlFor="atc-name-input">
+              Collection name
+            </label>
+            <div className={`atc-input-wrap${nameError ? " atc-input-wrap--error" : ""}`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" className="atc-input-icon">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+              <input
+                id="atc-name-input"
+                ref={nameInputRef}
+                className="atc-input"
+                type="text"
+                placeholder="e.g. Summer Reads…"
+                value={newName}
+                maxLength={48}
+                onChange={(e) => {
+                  setNewName(e.target.value);
+                  setNameError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newName.trim() && !createBusy) handleCreate();
+                }}
+              />
+              {newName && (
+                <button
+                  className="atc-input-clear"
+                  onClick={() => {
+                    setNewName("");
+                    setNameError("");
+                    nameInputRef.current?.focus();
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="12" height="12">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            {nameError && <p className="atc-field-error">{nameError}</p>}
+            <p className="atc-char-count">{newName.trim().length} / 48</p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="atc-footer">
+          <button className="atc-btn atc-btn--ghost" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            className={`atc-btn atc-btn--primary${!newName.trim() ? " atc-btn--disabled" : ""}${createBusy ? " atc-btn--busy" : ""}`}
+            onClick={handleCreate}
+            disabled={!newName.trim() || createBusy}
+          >
+            {createBusy ? "Creating…" : "Create Collection"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function UserDashboard() {
   const [books, setBooks] = useState([]);
   const { collections, isCollectionsLoading } = useBookStore();
   const [userName, setUserName] = useState("Reader");
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
@@ -278,7 +409,9 @@ export default function UserDashboard() {
       <section style={s.section}>
         <div style={s.sectionHeader}>
           <h2 style={s.sectionTitle}>Custom Collections</h2>
-          <button style={s.createCollectionBtn}>+ Create Collection</button>
+          <button style={s.createCollectionBtn}
+          onClick={() => setIsCreateModalOpen(true)}
+          >+ Create Collection</button>
         </div>
 
         {collections.length === 0 ? (
@@ -299,6 +432,11 @@ export default function UserDashboard() {
           Logout
         </button>
       </div>
+
+      {isCreateModalOpen && (
+        <CreateCollectionModal onClose={() => setIsCreateModalOpen(false)} />
+          )}
+    
     </PageLayout>
   );
 }

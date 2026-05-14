@@ -75,6 +75,38 @@ const addBookToCollection = async (req, res) => {
   }
 };
 
+const createCollection = async (req, res) => {
+  const user_id = req.user.id;
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ message: "Collection name is required" });
+  }
+
+  try {
+    const existingCollection = await CustomCollection.findOne({
+      userId: user_id,
+      name: { $regex: new RegExp(`^${name.trim()}$`, "i") },
+    });
+
+    if (existingCollection) {
+      return res.status(409).json({ message: "Collection with this name already exists" });
+    }
+
+    const newCollection = new CustomCollection({
+      name: name.trim(),
+      userId: user_id,
+      books: [],
+    });
+
+    await newCollection.save();
+    return res.status(201).json(newCollection);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 const createCollectionWithBook = async (req, res) => {
   const user_id = req.user.id;
   const book_id = req.params.bookId;
@@ -124,5 +156,6 @@ export {
   getMyCollections,
   getUserCollectionsForBook,
   addBookToCollection,
+  createCollection,
   createCollectionWithBook,
 };
