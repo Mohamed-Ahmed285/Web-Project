@@ -4,7 +4,7 @@ import PageLayout from "./PageLayout";
 import { useBookStore } from "../context/BookStoreContext";
 
 
-function BookCard({ book }) {
+function BookCard({ book, onDelete }) {
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
 
@@ -14,6 +14,7 @@ function BookCard({ book }) {
     <div
       style={{
         ...s.bookCard,
+        position: "relative",
         transform: hovered ? "translateY(-8px) scale(1.04)" : "none",
         boxShadow: hovered
           ? "0 12px 32px rgba(50,25,5,0.55)"
@@ -23,6 +24,19 @@ function BookCard({ book }) {
       onMouseLeave={() => setHovered(false)}
       onClick={() => navigate(`/book/${book._id}`)}
     >
+      {onDelete && (
+        <button
+          style={{ ...s.deleteBtn, opacity: hovered ? 1 : 0 }}
+          onClick={(e) => { e.stopPropagation(); onDelete(book); }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f5e4b9" strokeWidth="2" style={{ width: 13, height: 13 }}>
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14H6L5 6" />
+            <path d="M10 11v6M14 11v6" />
+            <path d="M9 6V4h6v2" />
+          </svg>
+        </button>
+      )}
       <div style={s.coverWrap}>
         <img src={book.cover_image.medium} alt={book.title} style={s.coverImg} />
       </div>
@@ -37,9 +51,10 @@ export default function CollectionView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { collections, isCollectionsLoading } = useBookStore();
+  const [confirmBook, setConfirmBook] = useState(null);
 
-  const collection = collections.find((c) => c._id === id);
-
+  const collection = collections.find((c) => c?._id === id);
+  const safeBooks = collection?.books?.filter(Boolean) ?? [];
 
   if (isCollectionsLoading) {
     return (
@@ -91,7 +106,7 @@ export default function CollectionView() {
         {/* Header */}
         <div style={s.header}>
           <div style={s.collectionIconRow}>
-            {collection.books.slice(0, 3).map((b, i) => (
+            {safeBooks.slice(0, 3).map((b, i) => (
               <img
                 key={b._id}
                 src={b.cover_image.medium}
@@ -108,7 +123,7 @@ export default function CollectionView() {
           <div style={s.headerText}>
             <h1 style={s.collectionTitle}>{collection.name}</h1>
             <p style={s.bookCount}>
-              {collection.books.length} book{collection.books.length !== 1 ? "s" : ""}
+              {safeBooks.length} book{safeBooks.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -117,15 +132,37 @@ export default function CollectionView() {
         <div style={s.divider} />
 
         {/* Books grid */}
-        {collection.books.length === 0 ? (
+        {safeBooks.length === 0 ? (
           <div style={s.emptyState}>
             <p style={s.emptyText}>This collection has no books yet.</p>
           </div>
         ) : (
           <div style={s.grid}>
-            {collection.books.map((book) => (
-              <BookCard key={book._id} book={book} />
+            {safeBooks.map((book) => (
+              <BookCard key={book._id} book={book} onDelete={setConfirmBook} />
             ))}
+          </div>
+        )}
+
+        {/* Confirmation Modal */}
+        {confirmBook && (
+          <div style={s.overlay}>
+            <div style={s.modal}>
+              <BookCard book={confirmBook} />
+              <div style={s.modalRight}>
+                <p style={s.modalText}>
+                  Are you sure you want to delete{" "}
+                  <span style={{ color: "#8b2a2a", fontWeight: 600 }}>"{confirmBook.title}"</span>
+                  {" "}from{" "}
+                  <span style={{ color: "#2c1a07", fontWeight: 700 }}>"{collection.name}"</span> ?
+                </p>
+                <div style={s.modalDivider} />
+                <div style={s.modalActions}>
+                  <button style={s.okayBtn} onClick={() => setConfirmBook(null)}>Okay</button>
+                  <button style={s.cancelBtn} onClick={() => setConfirmBook(null)}>Cancel</button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -220,6 +257,22 @@ const s = {
     border: "1px solid rgba(101,67,33,0.15)",
     backdropFilter: "blur(2px)",
   },
+  deleteBtn: {
+    position: "absolute",
+    top: "8px",
+    right: "8px",
+    background: "#5a1a1a",
+    border: "none",
+    borderRadius: "6px",
+    width: "26px",
+    height: "26px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "opacity 0.2s",
+    zIndex: 2,
+  },
   coverWrap: {
     width: "100px",
     height: "145px",
@@ -307,5 +360,71 @@ const s = {
     fontSize: "16px",
     color: "#26160b",
     maxWidth: "320px",
+  },
+  overlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(20,10,0,0.6)",
+    backdropFilter: "blur(3px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+  },
+  modal: {
+    background: "linear-gradient(160deg, #f5e4b9, #ecdba0)",
+    border: "2px solid rgba(101,67,33,0.4)",
+    borderRadius: "14px",
+    padding: "24px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "24px",
+    maxWidth: "360px",
+    width: "90%",
+    boxShadow: "0 20px 60px rgba(20,10,0,0.5)",
+  },
+  modalRight: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+    flex: 1,
+    width: "100%",
+  },
+  modalText: {
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "17px",
+    color: "#2c1a07",
+    lineHeight: 1.6,
+    textAlign: "center",
+  },
+  modalActions: {
+    display: "flex",
+    gap: "12px",
+    justifyContent: "center",
+  },
+  modalDivider: {
+    height: "1px",
+    background: "rgba(101,67,33,0.3)",
+  },
+  okayBtn: {
+    background: "#5a1a1a",
+    color: "#f5e4b9",
+    border: "none",
+    borderRadius: "8px",
+    padding: "10px 28px",
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "15px",
+    cursor: "pointer",
+  },
+  cancelBtn: {
+    background: "transparent",
+    color: "#2c1a07",
+    border: "1.5px solid rgba(101,67,33,0.4)",
+    borderRadius: "8px",
+    padding: "10px 28px",
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "15px",
+    cursor: "pointer",
   },
 };
