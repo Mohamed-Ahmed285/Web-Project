@@ -175,8 +175,10 @@ export function BookStoreProvider({ children }) {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authorization token found");
-
-      const response = await fetch("http://localhost:5000/api/collections/" + seedBookId, {
+      const endpoint = seedBookId 
+        ? `http://localhost:5000/api/collections/wbook/${seedBookId}` 
+        : "http://localhost:5000/api/collections";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
