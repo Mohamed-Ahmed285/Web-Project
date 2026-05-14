@@ -31,6 +31,30 @@ function BookCard({ book }) {
   );
 }
 
+// ── NEW: Default Shelf Card ────────────────────────────────────────────────────
+function DefaultShelfCard({ title, icon, path }) {
+  const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
+
+  return (
+    <div
+      style={{
+        ...s.defaultShelfCard,
+        transform: hovered ? "translateY(-4px)" : "none",
+        boxShadow: hovered
+          ? "0 8px 24px rgba(50,25,5,0.15)"
+          : "0 4px 16px rgba(50,25,5,0.08)",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(path)}
+    >
+      <div style={s.shelfIconWrapper}>{icon}</div>
+      <p style={s.shelfTitle}>{title}</p>
+    </div>
+  );
+}
+
 function CollectionCard({ col }) {
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
@@ -98,7 +122,7 @@ function ScrollRow({ children, visibleCount = 4 }) {
 
   const visible = Array.from(
     { length: Math.min(visibleCount, total) },
-    (_, k) => items[(index + k) % total],
+    (_, k) => items[(index + k) % total]
   );
 
   return (
@@ -156,7 +180,7 @@ export default function UserDashboard() {
         if (error.message === "API error") {
           console.error("One or more API requests failed.");
           localStorage.removeItem("token");
-          window.location.href = "/login"; // redirect
+          window.location.href = "/login";
         }
       } finally {
         setIsLoading(false);
@@ -213,13 +237,48 @@ export default function UserDashboard() {
         </ScrollRow>
       </section>
 
-      {/* My Collections */}
+      {/* ── NEW: Default Reading Shelves ── */}
+      <section style={s.section}>
+        <h2 style={s.sectionTitle}>My Reading Shelves</h2>
+        <div style={s.defaultShelvesRow}>
+          
+          <DefaultShelfCard
+            title="Completed"
+            path="/collection/1"
+            icon={
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+
+          <DefaultShelfCard
+            title="Currently Reading"
+            path="/collection/1" 
+            icon={
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253z" />
+              </svg>
+            }
+          />
+
+          <DefaultShelfCard
+            title="Want to Read"
+            path="/collection/1"
+            icon={
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+            }
+          />
+          
+        </div>
+      </section>
+      {/* My Collections (Custom) */}
       <section style={s.section}>
         <div style={s.sectionHeader}>
-          <h2 style={s.sectionTitle}>My Collections</h2>
-          <button style={s.createCollectionBtn}>
-            + Create Collection
-          </button>
+          <h2 style={s.sectionTitle}>Custom Collections</h2>
+          <button style={s.createCollectionBtn}>+ Create Collection</button>
         </div>
 
         {collections.length === 0 ? (
@@ -357,6 +416,49 @@ const s = {
     color: "#2c1a07",
     letterSpacing: "0.04em",
   },
+  
+  // ── New Styles for Default Shelves ──
+  defaultShelvesRow: {
+    display: "flex",
+    gap: "20px",
+    flexWrap: "wrap",
+  },
+  defaultShelfCard: {
+    flex: "1 1 200px",
+    background: "rgba(255,255,255,0.30)",
+    border: "1.5px solid rgba(101,67,33,0.3)",
+    borderRadius: "14px",
+    padding: "24px 16px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "16px",
+    cursor: "pointer",
+    backdropFilter: "blur(2px)",
+    transition: "transform 0.25s ease, box-shadow 0.25s ease",
+  },
+  shelfIconWrapper: {
+    width: "60px",
+    height: "60px",
+    borderRadius: "50%",
+    background: "rgba(107, 76, 34, 0.08)",
+    border: "1.5px solid rgba(101,67,33,0.15)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#4a2e0a",
+  },
+  shelfTitle: {
+    fontFamily: "'Cinzel', serif",
+    fontSize: "15px",
+    fontWeight: 700,
+    color: "#2c1a07",
+    letterSpacing: "0.05em",
+    textAlign: "center",
+  },
+  // ────────────────────────────────────
+
   rowOuter: {
     display: "flex",
     alignItems: "center",
