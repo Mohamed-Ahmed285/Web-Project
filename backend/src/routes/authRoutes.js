@@ -56,9 +56,4 @@ router.post("/login", login);
  *         description: Validation error or email already in use
  */
 router.post("/register", register);
-
-router.post("/login", login);
-
-router.post("/register", register);
-
 export default router;
