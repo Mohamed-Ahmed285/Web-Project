@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import PageLayout from "./PageLayout";
 
 function AddBookDialog({ onClose, onAdd, isAdding }) {
-  const [form, setForm] = useState({ title: "", author: "", genre: "", year: "", pages: "" ,rating: "" });
+  const [form, setForm] = useState({ title: "", author: "", genre: "", year: "", pages: "" ,rating: "", language: "", description: "" });
   const [error, setError] = useState("");
 
   const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
@@ -12,9 +12,15 @@ function AddBookDialog({ onClose, onAdd, isAdding }) {
       setError("Title and Author are required.");
       return;
     }
+    if (!form.language.trim() || !form.description.trim()) {
+      setError("Language and Description are required.");
+      return;
+    }
     onAdd({
       title: form.title.trim(),
       author: form.author.trim(),
+      language: form.language.trim(),
+      description: form.description.trim(),
       categories: form.genre.trim() ? [form.genre.trim()] : ["Unknown"],
       published_year: form.year ? parseInt(form.year) : null,
       pages: form.pages ? parseInt(form.pages) : 100,
@@ -32,7 +38,7 @@ function AddBookDialog({ onClose, onAdd, isAdding }) {
         {error && <p style={d.error}>{error}</p>}
 
         {/* Bootstrap grid for dialog fields on md+ */}
-        <div className="row g-3" style={{ marginBottom: "24px" }}>
+        <div className="row g-3" style={{ marginBottom: "12px" }}>
           {[
             { label: "Title *",  field: "title",  placeholder: "e.g. The Great Gatsby" },
             { label: "Author *", field: "author", placeholder: "e.g. F. Scott Fitzgerald" },
@@ -40,6 +46,7 @@ function AddBookDialog({ onClose, onAdd, isAdding }) {
             { label: "Year",     field: "year",   placeholder: "e.g. 1925" },
             { label: "Pages",    field: "pages",  placeholder: "e.g. 180" },
             { label: "Rating",   field: "rating", placeholder: "e.g. 4.5" },
+            { label: "Language *", field: "language", placeholder: "e.g. English" },
           ].map(({ label, field, placeholder }) => (
             <div key={field} className="col-12 col-sm-6">
               <label style={d.label}>{label}</label>
@@ -53,6 +60,17 @@ function AddBookDialog({ onClose, onAdd, isAdding }) {
               />
             </div>
           ))}
+        </div>
+
+        <div style={{ marginBottom: "9px" }}>
+          <label style={d.label}>Description *</label>
+          <textarea
+            style={{ ...d.input, paddingTop: "10px", resize: "vertical" }}
+            value={form.description}
+            onChange={set("description")}
+            placeholder="Short summary or description of the book"
+            disabled={isAdding}
+          />
         </div>
 
         <div style={d.actions}>
@@ -404,7 +422,7 @@ const d = {
     background: "rgba(245,228,185,0.98)",
     border: "1.5px solid rgba(101,67,33,0.35)",
     borderRadius: "20px",
-    padding: "36px 40px 28px",
+    padding: "28px 40px 28px",
     width: "100%", maxWidth: "520px",
     boxShadow: "0 20px 60px rgba(20,10,2,0.35)",
     display: "flex", flexDirection: "column", gap: "6px",

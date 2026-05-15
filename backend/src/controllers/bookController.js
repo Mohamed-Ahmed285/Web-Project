@@ -68,12 +68,20 @@ const getBooksPaginated = async (req, res) => {
 
 const createBook = async (req, res) => {
   try {
-    const { title, author, published_year, categories, pages, rating } =
+    const { title, author, published_year, categories, pages, rating, language, description } =
       req.body;
 
     // Input validation
     if (!title?.trim() || !author?.trim()) {
       return res.status(400).json({ message: "Title and author are required" });
+    }
+
+    if (!language?.trim()) {
+      return res.status(400).json({ message: "Language is required" });
+    }
+
+    if (!description?.trim()) {
+      return res.status(400).json({ message: "Description is required" });
     }
 
     if (
@@ -159,6 +167,8 @@ const createBook = async (req, res) => {
       author: author.trim(),
       cover_image: coverUrls,
       published_year,
+      language: language.trim(),
+      description: description.trim(),
       categories: bookCategories,
       pages,
       rating,
