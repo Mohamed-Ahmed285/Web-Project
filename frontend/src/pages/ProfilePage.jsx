@@ -139,7 +139,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <PageLayout>
-        <div className="profile-wrapper">
+        <div className="profile-wrapper-loading">
           <p>Loading profile...</p>
         </div>
       </PageLayout>

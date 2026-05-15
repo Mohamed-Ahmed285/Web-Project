@@ -311,10 +311,10 @@ input[type="password"]::-ms-clear {
   cursor: pointer;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1024px) {
   .auth-bg {
     background-image: url("../assets/bookphone.png");
-    background-size: cover;
+    background-size: 100% 100%;
     background-position: center;
   }
   .book-form-overlay,

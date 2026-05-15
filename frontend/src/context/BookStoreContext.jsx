@@ -17,6 +17,8 @@ export function BookStoreProvider({ children }) {
   const [collections, setCollections] = useState([]);
   const [isCollectionsLoading, setIsCollectionsLoading] = useState(true);
 
+  const [popularBooks, setPopularBooks] = useState([]);
+  const [isPopularBooksLoading, setIsPopularBooksLoading] = useState(true);
 
   const fetchCollections = useCallback(async () => {
     try {
@@ -43,12 +45,43 @@ export function BookStoreProvider({ children }) {
     }
   }, []);
 
+  const fetchPopularBooks = useCallback(async () => {
+    if (popularBooks.length > 0) {
+      setIsPopularBooksLoading(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsPopularBooksLoading(false);
+        return;
+      }
+
+      setIsPopularBooksLoading(true);
+
+      const response = await fetch("http://localhost:5000/api/books/popular?limit=15", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPopularBooks(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch popular books", error);
+    } finally {
+      setIsPopularBooksLoading(false);
+    }
+  }, [popularBooks.length]);
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       fetchCollections();
+      fetchPopularBooks();
     }, 0);
     return () => clearTimeout(timeoutId);
-  }, [fetchCollections]);
+  }, [fetchCollections, fetchPopularBooks]);
 
   const getBook = useCallback(
     (id) => bookStore[id] ?? makeDefault(),
@@ -293,7 +326,7 @@ export function BookStoreProvider({ children }) {
         getBook, patchBook, addReview, getAvgRating, getTotalReviews,
         collections, isCollectionsLoading, addBookToCollection, createCollection,
         fetchUserBookData, updateReadingStatus, submitReview, fetchCollections,
-        removeBookFromCollection, deleteCollection
+        removeBookFromCollection, deleteCollection, popularBooks, isPopularBooksLoading, fetchPopularBooks
       }}
     >
       {children}

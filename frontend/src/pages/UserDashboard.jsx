@@ -346,8 +346,15 @@ function CreateCollectionModal({ onClose }) {
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function UserDashboard() {
   const navigate = useNavigate();
-  const [books, setBooks] = useState([]);
-  const { collections, isCollectionsLoading, fetchCollections, deleteCollection } = useBookStore();
+  const {
+    collections,
+    isCollectionsLoading,
+    fetchCollections,
+    deleteCollection,
+    popularBooks,
+    isPopularBooksLoading,
+    fetchPopularBooks
+  } = useBookStore();
   const [userName, setUserName] = useState("Reader");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -362,30 +369,23 @@ export default function UserDashboard() {
     window.location.href = "/login";
   };
 
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token");
 
-        const headers = {
-          Authorization: `Bearer ${token}`,
-        };
+        const headers = { Authorization: `Bearer ${token}` };
 
-        const booksRes = await fetch("http://localhost:5000/api/books/popular?limit=15", { headers });
-
-        if (!booksRes.ok) {
-          throw new Error("API error");
-        }
-
-        const booksData = await booksRes.json();
-        setBooks(booksData);
+        // Fetch User Info
         const userRes = await fetch("/api/user/me", { headers });
         const userData = await userRes.json();
+
         setUserName(userData.first_name || "Reader");
         setAvatarUrl(userData.profile_image || "");
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching user data:", error);
         if (error.message === "API error") {
           localStorage.removeItem("token");
           window.location.href = "/login";
@@ -394,11 +394,13 @@ export default function UserDashboard() {
         setIsLoading(false);
       }
     };
+
     fetchDashboardData();
     fetchCollections();
-  }, [fetchCollections]);
+    fetchPopularBooks();
+  }, [fetchCollections, fetchPopularBooks]);
 
-  if (isCollectionsLoading || isLoading) {
+  if (isCollectionsLoading || isPopularBooksLoading || isLoading) {
     return (
       <PageLayout>
         <div style={s.loadingWrapper}>
@@ -472,11 +474,10 @@ export default function UserDashboard() {
         <SearchCatalog onSearch={(q, results) => console.log("Search:", q, results)} />
       </div>
 
-      {/* Top Books */}
       <section style={s.section}>
         <h2 style={s.sectionTitle}>Top Books</h2>
         <ScrollRow itemWidth={142}>
-          {books.map((b) => (
+          {popularBooks.map((b) => (
             <div key={b._id} style={{ flexShrink: 0 }}>
               <BookCard book={b} />
             </div>
@@ -547,7 +548,7 @@ export default function UserDashboard() {
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((c) => (
                 <div key={c._id} style={{ flexShrink: 0 }}>
-                <CollectionCard col={c} onDelete={(col) => setCollectionToDelete(col)} />
+                  <CollectionCard col={c} onDelete={(col) => setCollectionToDelete(col)} />
                 </div>
               ))}
           </ScrollRow>
@@ -558,21 +559,25 @@ export default function UserDashboard() {
         <button style={s.logoutBtn} onClick={handleLogout}>Logout</button>
       </div>
 
-      {isCreateModalOpen && (
-        <CreateCollectionModal onClose={() => setIsCreateModalOpen(false)} />
-      )}
+      {
+        isCreateModalOpen && (
+          <CreateCollectionModal onClose={() => setIsCreateModalOpen(false)} />
+        )
+      }
 
-      {collectionToDelete && (
-        <DeleteCollectionModal
-          col={collectionToDelete}
-          onClose={() => setCollectionToDelete(null)}
-          onConfirm={async () => {
-            await deleteCollection(collectionToDelete._id);
-            setCollectionToDelete(null);
-          }}
-        />
-      )}
-    </PageLayout>
+      {
+        collectionToDelete && (
+          <DeleteCollectionModal
+            col={collectionToDelete}
+            onClose={() => setCollectionToDelete(null)}
+            onConfirm={async () => {
+              await deleteCollection(collectionToDelete._id);
+              setCollectionToDelete(null);
+            }}
+          />
+        )
+      }
+    </PageLayout >
   );
 }
 
