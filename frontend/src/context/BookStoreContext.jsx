@@ -175,8 +175,8 @@ export function BookStoreProvider({ children }) {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authorization token found");
-      const endpoint = seedBookId 
-        ? `http://localhost:5000/api/collections/wbook/${seedBookId}` 
+      const endpoint = seedBookId
+        ? `http://localhost:5000/api/collections/wbook/${seedBookId}`
         : "http://localhost:5000/api/collections";
       const response = await fetch(endpoint, {
         method: "POST",
@@ -189,7 +189,7 @@ export function BookStoreProvider({ children }) {
 
       const data = await response.json();
 
-      if (response.status === 409){
+      if (response.status === 409) {
         return { status: "duplicate", message: data.message || "Collection name already exists" };
       }
 

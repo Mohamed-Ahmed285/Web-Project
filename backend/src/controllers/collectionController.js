@@ -1,4 +1,5 @@
 import CustomCollection from "../models/Collection.js";
+import UserBook from "../models/UserBook.js";
 import Book from "../models/Book.js";
 
 const getMyCollections = async (req, res) => {
@@ -6,6 +7,39 @@ const getMyCollections = async (req, res) => {
     const collections = await CustomCollection.find({
       userId: req.user.id,
     }).populate("books");
+
+    const defaultCollection = await UserBook.find({
+      userId: req.user.id,
+    }).populate("bookId");
+
+    collections.push({
+      _id: "reading",
+      name: "Currently Reading",
+      books: [],
+    });
+
+    collections.push({
+      _id: "completed",
+      name: "Completed",
+      books: [],
+    });
+
+    collections.push({
+      _id: "want-to-read",
+      name: "Want to Read",
+      books: [],
+    });
+
+    defaultCollection.forEach((it) => {
+      if (it.status) {
+        const collection = collections.find((col) => col._id === it.status);
+        if (collection) {
+          collection.books.push(it.bookId);
+        }
+      }
+    });
+
+    console.log(collections);
 
     res.status(200).json(collections);
   } catch (error) {
@@ -90,7 +124,9 @@ const createCollection = async (req, res) => {
     });
 
     if (existingCollection) {
-      return res.status(409).json({ message: "Collection with this name already exists" });
+      return res
+        .status(409)
+        .json({ message: "Collection with this name already exists" });
     }
 
     const newCollection = new CustomCollection({
