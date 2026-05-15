@@ -6,6 +6,8 @@ import {
   addBookToCollection,
   createCollection,
   createCollectionWithBook,
+  DeleteCollection,
+  DeleteBookFromCollection,
 } from "../controllers/collectionController.js";
 
 const router = express.Router();
@@ -14,10 +16,14 @@ router.get("/", authMiddleware, getMyCollections);
 
 router.post("/", authMiddleware, createCollection);
 
-router.post("wbook/:bookId", authMiddleware, createCollectionWithBook);
+router.post("/book/:bookId", authMiddleware, createCollectionWithBook);
 
 router.get("/:id", authMiddleware, getUserCollectionsForBook);
 
 router.post("/addBook/:id", authMiddleware, addBookToCollection);
+
+router.delete("/:id", authMiddleware, DeleteCollection);
+
+router.delete("/removeBook/:id", authMiddleware, DeleteBookFromCollection);
 
 export default router;

@@ -17,29 +17,38 @@ export function BookStoreProvider({ children }) {
   const [collections, setCollections] = useState([]);
   const [isCollectionsLoading, setIsCollectionsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchAllCollections = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
 
-        const response = await fetch("http://localhost:5000/api/collections", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCollections(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch collections centrally", error);
-      } finally {
+  const fetchCollections = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
         setIsCollectionsLoading(false);
+        return;
       }
-    };
 
-    fetchAllCollections();
+      setIsCollectionsLoading(true);
+
+      const response = await fetch("http://localhost:5000/api/collections", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCollections(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch collections centrally", error);
+    } finally {
+      setIsCollectionsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchCollections();
+    }, 0);
+    return () => clearTimeout(timeoutId);
+  }, [fetchCollections]);
 
   const getBook = useCallback(
     (id) => bookStore[id] ?? makeDefault(),
@@ -176,7 +185,7 @@ export function BookStoreProvider({ children }) {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authorization token found");
       const endpoint = seedBookId
-        ? `http://localhost:5000/api/collections/wbook/${seedBookId}`
+        ? `http://localhost:5000/api/collections/book/${seedBookId}`
         : "http://localhost:5000/api/collections";
       const response = await fetch(endpoint, {
         method: "POST",
@@ -225,12 +234,66 @@ export function BookStoreProvider({ children }) {
     return staticBook.reviewsCount + entry.reviews.length;
   }, [bookStore]);
 
+  // ── Remove Book from Collection ──
+  const removeBookFromCollection = useCallback(async (collectionId, bookId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/collections/removeBook/${collectionId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ bookId })
+      });
+
+      if (!response.ok) throw new Error("Failed to remove book");
+
+      setCollections((prev) =>
+        prev.map((c) => {
+          if (c._id === collectionId) {
+            return {
+              ...c,
+              books: c.books.filter((b) => (b._id || b) !== bookId),
+            };
+          }
+          return c;
+        })
+      );
+      return { success: true };
+    } catch (error) {
+      console.error("Error removing book:", error);
+      return { success: false, error: error.message };
+    }
+  }, []);
+
+  // ── Delete Entire Collection ──
+  const deleteCollection = useCallback(async (collectionId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/collections/${collectionId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) throw new Error("Failed to delete collection");
+
+      setCollections((prev) => prev.filter((c) => c._id !== collectionId));
+      return { success: true };
+    } catch (error) {
+      console.error("Error deleting collection:", error);
+      return { success: false, error: error.message };
+    }
+  }, []);
+
+
   return (
     <BookStoreContext.Provider
       value={{
         getBook, patchBook, addReview, getAvgRating, getTotalReviews,
         collections, isCollectionsLoading, addBookToCollection, createCollection,
-        fetchUserBookData, updateReadingStatus, submitReview
+        fetchUserBookData, updateReadingStatus, submitReview, fetchCollections,
+        removeBookFromCollection, deleteCollection
       }}
     >
       {children}

@@ -50,8 +50,10 @@ function BookCard({ book, onDelete }) {
 export default function CollectionView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { collections, isCollectionsLoading } = useBookStore();
+  const { collections, isCollectionsLoading, removeBookFromCollection, deleteCollection } = useBookStore();
   const [confirmBook, setConfirmBook] = useState(null);
+  const [isRemovingBook, setIsRemovingBook] = useState(false);
+  const [isDeletingColl, setIsDeletingColl] = useState(false);
 
   const collection = collections.find((c) => c?._id === id);
   const safeBooks = collection?.books?.filter(Boolean) ?? [];
@@ -85,6 +87,36 @@ export default function CollectionView() {
       </PageLayout>
     );
   }
+
+  const handleRemoveBook = async () => {
+    if (!confirmBook) return;
+    setIsRemovingBook(true);
+
+    const result = await removeBookFromCollection(id, confirmBook._id);
+
+    setIsRemovingBook(false);
+    if (result.success) {
+      setConfirmBook(null);
+    } else {
+      alert("Failed to remove book from collection.");
+    }
+  };
+
+  const handleDeleteCollection = async () => {
+    const isConfirmed = window.confirm(`Are you sure you want to delete the "${collection.name}" collection? This cannot be undone.`);
+
+    if (isConfirmed) {
+      setIsDeletingColl(true);
+      const result = await deleteCollection(id);
+      setIsDeletingColl(false);
+
+      if (result.success) {
+        navigate("/dashboard"); // Kick them back to the dashboard if the collection is gone
+      } else {
+        alert("Failed to delete collection.");
+      }
+    }
+  };
 
   return (
     <PageLayout>
@@ -128,16 +160,20 @@ export default function CollectionView() {
                   {safeBooks.length} book{safeBooks.length !== 1 ? "s" : ""}
                 </p>
               </div>
-            
+
             </div>
           </div>
 
-            <div style={s.lheader}>
-              <button style={s.DeleteColl}>
-                Delete Collection
-              </button>
-            </div>
-         
+          <div style={s.lheader}>
+            <button
+              style={{ ...s.DeleteColl, opacity: isDeletingColl ? 0.6 : 1 }}
+              onClick={handleDeleteCollection}
+              disabled={isDeletingColl}
+            >
+              {isDeletingColl ? "Deleting..." : "Delete Collection"}
+            </button>
+          </div>
+
         </div>
 
         {/* Divider */}
@@ -172,8 +208,22 @@ export default function CollectionView() {
                 </p>
                 <div style={s.modalDivider} />
                 <div style={s.modalActions}>
-                  <button style={s.okayBtn} onClick={() => setConfirmBook(null)}>Okay</button>
-                  <button style={s.cancelBtn} onClick={() => setConfirmBook(null)}>Cancel</button>
+                  <div style={s.modalActions}>
+                    <button
+                      style={{ ...s.okayBtn, opacity: isRemovingBook ? 0.6 : 1 }}
+                      onClick={handleRemoveBook}
+                      disabled={isRemovingBook}
+                    >
+                      {isRemovingBook ? "Removing..." : "Okay"}
+                    </button>
+                    <button
+                      style={s.cancelBtn}
+                      onClick={() => setConfirmBook(null)}
+                      disabled={isRemovingBook}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -214,16 +264,16 @@ const s = {
     flexWrap: "wrap",
     justifyContent: "space-between"
   },
-  rheader:{
+  rheader: {
     display: "flex",
     gap: "35px",
-    marginLeft:"25px",
+    marginLeft: "25px",
   },
-   lheader:{
-    marginTop:"20px",
-    marginRight:"40px",
+  lheader: {
+    marginTop: "20px",
+    marginRight: "40px",
   },
-  DeleteColl:{
+  DeleteColl: {
     background: "#8b1a1a",
     color: "#f5e6c8",
     borderRadius: "12px",

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
 import "./ProfilePage.css";
- 
+
 const DEFAULT_USER = {
   first_name: "",
   second_name: "",
@@ -10,7 +10,7 @@ const DEFAULT_USER = {
   profile_image: "",
   createdAt: "",
 };
- 
+
 export default function ProfilePage() {
   const [user, setUser] = useState(DEFAULT_USER);
   const [form, setForm] = useState({ firstName: "", secondName: "", email: "" });
@@ -22,16 +22,16 @@ export default function ProfilePage() {
   const [apiError, setApiError] = useState("");
   const fileRef = useRef();
   const navigate = useNavigate();
- 
+
   const fullName = `${user.first_name || ""} ${user.second_name || ""}`.trim();
   const joinedDate = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : "";
- 
+
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
@@ -65,19 +65,19 @@ export default function ProfilePage() {
 
     fetchProfile();
   }, []);
- 
+
   const handleBack = () => {
     const role = localStorage.getItem("role");
     navigate(role === "admin" ? "/admin" : "/dashboard");
   };
- 
+
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
   };
- 
+
   const handleSave = async () => {
     setApiError("");
     try {
@@ -119,7 +119,7 @@ export default function ProfilePage() {
       setApiError(error.message || "Unable to update profile");
     }
   };
- 
+
   const handleCancel = () => {
     setForm({ firstName: user.first_name || "", secondName: user.second_name || "", email: user.email });
     setAvatarPreview(user.profile_image || null);
@@ -127,7 +127,7 @@ export default function ProfilePage() {
     setEditing(false);
     setApiError("");
   };
- 
+
   const initials = fullName
     .split(" ")
     .filter(Boolean)
@@ -135,7 +135,7 @@ export default function ProfilePage() {
     .join("")
     .toUpperCase()
     .slice(0, 2);
- 
+
   if (loading) {
     return (
       <PageLayout>
@@ -145,7 +145,7 @@ export default function ProfilePage() {
       </PageLayout>
     );
   }
- 
+
   return (
     <PageLayout>
       <div className="mt-1">
@@ -158,7 +158,7 @@ export default function ProfilePage() {
           {editing && <span className="edit-badge">EDITING</span>}
         </h1>
       </div>
- 
+
       <div className="profile-wrapper">
         <div className="d-flex align-items-center gap-3 mb-3">
           <div
@@ -181,17 +181,17 @@ export default function ProfilePage() {
             )}
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="d-none" onChange={handleAvatarChange} />
- 
+
           <div>
             <p className="profile-name-text">{fullName || "Your Name"}</p>
             {joinedDate && <p className="profile-subtext">Member since {joinedDate}</p>}
           </div>
         </div>
- 
+
         {apiError && <div className="server-error mb-3">{apiError}</div>}
- 
+
         <hr className="divider-gold mb-3" />
- 
+
         <div className="mb-3 d-flex gap-3 flex-wrap">
           <div className="w-100 w-md-50">
             <label className="gold-label d-block">First Name</label>
@@ -214,7 +214,7 @@ export default function ProfilePage() {
             />
           </div>
         </div>
- 
+
         <div className="mb-3">
           <label className="gold-label d-block">Email Address</label>
           <input
@@ -226,9 +226,9 @@ export default function ProfilePage() {
             placeholder="your@email.com"
           />
         </div>
- 
+
         <hr className="divider-gold" />
- 
+
         {editing ? (
           <div className="d-flex align-items-center gap-3 flex-wrap mt-3">
             <button className="btn btn-gold" onClick={handleSave}>SAVE CHANGES</button>
@@ -240,7 +240,7 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
- 
+
       {toast && <div className="toast-success">✦ PROFILE UPDATED</div>}
     </PageLayout>
   );

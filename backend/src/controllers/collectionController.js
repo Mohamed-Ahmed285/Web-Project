@@ -186,10 +186,76 @@ const createCollectionWithBook = async (req, res) => {
   }
 };
 
+const DeleteCollection = async (req, res) => {
+  const user_id = req.user.id;
+  const collection_id = req.params.id;
+
+  if (
+    collection_id == "reading" ||
+    collection_id == "completed" ||
+    collection_id == "want-to-read"
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Cannot delete default collection" });
+  }
+
+  try {
+    await CustomCollection.findOneAndDelete({
+      _id: collection_id,
+      userId: user_id,
+    });
+    res.status(200).json({ message: "Collection deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting collection:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const DeleteBookFromCollection = async (req, res) => {
+  const user_id = req.user.id;
+  const collection_id = req.params.id;
+  const book_id = req.body.bookId;
+  if (
+    collection_id == "reading" ||
+    collection_id == "completed" ||
+    collection_id == "want-to-read"
+  ) {
+    await UserBook.findOneAndDelete({
+      userId: user_id,
+      bookId: book_id,
+    });
+    return res.status(200).json({ message: "Book removed from collection" });
+  }
+
+  try {
+    const collection = await CustomCollection.findById(collection_id);
+    if (!collection) {
+      return res.status(404).json({ message: "Collection not found" });
+    }
+    if (collection.userId.toString() !== user_id) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const bookIndex = collection.books.indexOf(book_id);
+    if (bookIndex === -1) {
+      return res.status(404).json({ message: "Book not found in collection" });
+    }
+    collection.books.splice(bookIndex, 1);
+    await collection.save();
+    res.status(200).json({ message: "Book removed from collection" });
+  } catch (err) {
+    console.error("Error removing book from collection:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export {
   getMyCollections,
   getUserCollectionsForBook,
   addBookToCollection,
   createCollection,
   createCollectionWithBook,
+  DeleteCollection,
+  DeleteBookFromCollection,
 };
