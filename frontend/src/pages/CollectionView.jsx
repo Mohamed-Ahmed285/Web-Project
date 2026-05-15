@@ -105,27 +105,39 @@ export default function CollectionView() {
 
         {/* Header */}
         <div style={s.header}>
-          <div style={s.collectionIconRow}>
-            {safeBooks.slice(0, 3).map((b, i) => (
-              <img
-                key={b._id}
-                src={b.cover_image.medium}
-                alt={b.title}
-                style={{
-                  ...s.headerThumb,
-                  left: `${i * 30}px`,
-                  zIndex: i + 1,
-                  transform: `rotate(${[-8, 0, 6][i] ?? 0}deg)`,
-                }}
-              />
-            ))}
+          <div style={s.rheader}>
+            <div style={s.collectionIconRow}>
+              {safeBooks.slice(0, 3).map((b, i) => (
+                <img
+                  key={b._id}
+                  src={b.cover_image.medium}
+                  alt={b.title}
+                  style={{
+                    ...s.headerThumb,
+                    left: `${i * 30}px`,
+                    zIndex: i + 1,
+                    transform: `rotate(${[-8, 0, 6][i] ?? 0}deg)`,
+                  }}
+                />
+              ))}
+            </div>
+            <div style={s.headerText}>
+              <div>
+                <h1 style={s.collectionTitle}>{collection.name}</h1>
+                <p style={s.bookCount}>
+                  {safeBooks.length} book{safeBooks.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+            
+            </div>
           </div>
-          <div style={s.headerText}>
-            <h1 style={s.collectionTitle}>{collection.name}</h1>
-            <p style={s.bookCount}>
-              {safeBooks.length} book{safeBooks.length !== 1 ? "s" : ""}
-            </p>
-          </div>
+
+            <div style={s.lheader}>
+              <button style={s.DeleteColl}>
+                Delete Collection
+              </button>
+            </div>
+         
         </div>
 
         {/* Divider */}
@@ -200,6 +212,27 @@ const s = {
     gap: "40px",
     marginTop: "4px",
     flexWrap: "wrap",
+    justifyContent: "space-between"
+  },
+  rheader:{
+    display: "flex",
+    gap: "35px",
+    marginLeft:"25px",
+  },
+   lheader:{
+    marginTop:"20px",
+    marginRight:"40px",
+  },
+  DeleteColl:{
+    background: "#8b1a1a",
+    color: "#f5e6c8",
+    borderRadius: "12px",
+    border: "2px solid #6b1010",
+    fontWeight: 300,
+    padding: "6px 9px",
+    cursor: "pointer",
+    boxShadow: "0 6px 18px rgba(139,62,47,0.18)",
+    transition: "transform 0.2s, background 0.2s",
   },
   collectionIconRow: {
     position: "relative",
