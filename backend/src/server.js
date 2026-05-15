@@ -33,9 +33,9 @@ const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Book Tracker API",
+      title: "Shelf API",
       version: "1.0.0",
-      description: "API documentation for the Book Tracker application",
+      description: "API documentation for Shelf",
     },
     servers: [
       {
