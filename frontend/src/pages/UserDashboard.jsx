@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect , useRef} from "react";
+import { useState, useEffect, useRef } from "react";
 import React from "react";
 import SearchCatalog from "./SearchCatalog";
 import PageLayout from "./PageLayout";
@@ -143,7 +143,7 @@ function ScrollRow({ children, visibleCount = 4 }) {
 function CreateCollectionModal({ onClose }) {
   const { createCollection } = useBookStore();
   const overlayRef = useRef(null);
-  
+
   const [newName, setNewName] = useState("");
   const [nameError, setNameError] = useState("");
   const [createBusy, setCreateBusy] = useState(false);
@@ -286,6 +286,7 @@ export default function UserDashboard() {
   };
 
 
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -296,7 +297,7 @@ export default function UserDashboard() {
           Authorization: `Bearer ${token}`,
         };
 
-        const booksRes = await fetch("http://localhost:5000/api/books", { headers });
+        const booksRes = await fetch("http://localhost:5000/api/books/popular?limit=15", { headers });
 
         if (!booksRes.ok) {
           throw new Error("API error");
@@ -372,10 +373,10 @@ export default function UserDashboard() {
       <section style={s.section}>
         <h2 style={s.sectionTitle}>My Reading Shelves</h2>
         <div style={s.defaultShelvesRow}>
-          
+
           <DefaultShelfCard
             title="Completed"
-            path="/collection/1"
+            path="/collection/completed"
             icon={
               <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -385,7 +386,7 @@ export default function UserDashboard() {
 
           <DefaultShelfCard
             title="Currently Reading"
-            path="/collection/1" 
+            path="/collection/reading"
             icon={
               <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253z" />
@@ -395,14 +396,14 @@ export default function UserDashboard() {
 
           <DefaultShelfCard
             title="Want to Read"
-            path="/collection/1"
+            path="/collection/want-to-read"
             icon={
               <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
               </svg>
             }
           />
-          
+
         </div>
       </section>
       {/* My Collections (Custom) */}
@@ -410,7 +411,7 @@ export default function UserDashboard() {
         <div style={s.sectionHeader}>
           <h2 style={s.sectionTitle}>Custom Collections</h2>
           <button style={s.createCollectionBtn}
-          onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => setIsCreateModalOpen(true)}
           >+ Create Collection</button>
         </div>
 
@@ -435,8 +436,8 @@ export default function UserDashboard() {
 
       {isCreateModalOpen && (
         <CreateCollectionModal onClose={() => setIsCreateModalOpen(false)} />
-          )}
-    
+      )}
+
     </PageLayout>
   );
 }
@@ -554,7 +555,7 @@ const s = {
     color: "#2c1a07",
     letterSpacing: "0.04em",
   },
-  
+
   // ── New Styles for Default Shelves ──
   defaultShelvesRow: {
     display: "flex",
