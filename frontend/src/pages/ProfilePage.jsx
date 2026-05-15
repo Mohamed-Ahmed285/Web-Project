@@ -6,7 +6,6 @@ import "./ProfilePage.css";
 const DEFAULT_USER = {
   name: "",
   email: "",
-  bio: "",
   joinedDate: "",
   avatar: null,
 };
@@ -14,7 +13,7 @@ const DEFAULT_USER = {
 export default function ProfilePage() {
   // TODO: replace with real API call — e.g. const { data: user } = useQuery(() => axios.get("/api/users/me"))
   const [user, setUser] = useState(DEFAULT_USER);
-  const [form, setForm] = useState({ name: user.name, email: user.email, bio: user.bio });
+  const [form, setForm] = useState({ name: user.name, email: user.email});
   const [editing, setEditing] = useState(false);
   const [avatarPreview, setAvatar] = useState(user.avatar);
   const [avatarFile, setAvatarFile] = useState(null);
@@ -43,7 +42,7 @@ export default function ProfilePage() {
   };
  
   const handleCancel = () => {
-    setForm({ name: user.name, email: user.email, bio: user.bio });
+    setForm({ name: user.name, email: user.email });
     setAvatar(user.avatar);
     setAvatarFile(null);
     setEditing(false);
@@ -117,19 +116,6 @@ export default function ProfilePage() {
             disabled={!editing}
             onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
             placeholder="your@email.com"
-          />
-        </div>
- 
-        <div className="mb-3">
-          <label className="gold-label d-block">Bio</label>
-          <textarea
-            className="form-control profile-input"
-            rows={3}
-            value={form.bio}
-            disabled={!editing}
-            onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
-            placeholder="A few words about yourself…"
-            style={{ resize: "none" }}
           />
         </div>
  
