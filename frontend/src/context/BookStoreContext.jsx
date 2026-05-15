@@ -83,13 +83,6 @@ export function BookStoreProvider({ children }) {
     return () => clearTimeout(timeoutId);
   }, [fetchCollections, fetchPopularBooks]);
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      fetchCollections();
-    }, 0);
-    return () => clearTimeout(timeoutId);
-  }, [fetchCollections]);
-
   const getBook = useCallback(
     (id) => bookStore[id] ?? makeDefault(),
     [bookStore]
