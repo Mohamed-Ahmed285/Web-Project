@@ -303,7 +303,7 @@ export default function UserDashboard() {
           Authorization: `Bearer ${token}`,
         };
 
-        const booksRes = await fetch("http://localhost:5000/api/books", { headers });
+        const booksRes = await fetch("http://localhost:5000/api/books/popular?limit=15", { headers });
 
         if (!booksRes.ok) {
           throw new Error("API error");
@@ -397,7 +397,7 @@ export default function UserDashboard() {
 
       {/* Search */}
       <div style={s.searchRow}>
-        <SearchCatalog books={books} onSearch={(q, results) => console.log("Search:", q, results)} />
+        <SearchCatalog onSearch={(q, results) => console.log("Search:", q, results)} />
       </div>
 
       {/* Top Books */}
