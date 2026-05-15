@@ -93,6 +93,7 @@ export default function AdminDashboard() {
   const [topbooks, setBooks] = useState([]);
   const [activities, setActivities] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
+  const adminName = localStorage.getItem("first_name") || "Admin";
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -178,12 +179,31 @@ export default function AdminDashboard() {
     <PageLayout>
       {/* ── Header ── */}
       <div className="adm-header">
-        <div>
-          <h1 className="adm-title">Admin Dashboard</h1>
-          <p className="adm-subtitle">Overview of your system</p>
+        <div className="adm-header-left">
+          <div
+            className="adm-avatar-btn"
+            onClick={() => navigate("/profile")}
+            title="View profile"
+          >
+            {localStorage.getItem("avatar_url") ? (
+              <img
+                src={localStorage.getItem("avatar_url")}
+                alt={adminName}
+                className="adm-avatar-img"
+              />
+            ) : (
+              <span className="adm-avatar-initial">
+                {adminName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+
+          <div>
+            <h1 className="adm-title">Admin Dashboard</h1>
+            <p className="adm-subtitle">Overview of your system</p>
+          </div>
         </div>
       </div>
-
       {loading ? (
         <div className="adm-loading">Loading...</div>
       ) : (
@@ -202,7 +222,7 @@ export default function AdminDashboard() {
                 className={`adm-slide ${animating ? `slide-out-${animDir}` : "slide-in"}`}
               >
                 {panel === 0 ? (
-                <div className="adm-panel1">
+                  <div className="adm-panel1">
                     <div className="adm-stats">
                       <StatCard
                         value={dashboardData?.stats?.totalBooks?.toLocaleString() || "0"}
@@ -224,7 +244,7 @@ export default function AdminDashboard() {
                         {dashboardData?.monthlyActivity ? (
                           <MiniChart data={dashboardData.monthlyActivity} />
                         ) : (
-                          <p style={{fontSize: "13px", color: "#6b4c22", textAlign: "center", marginTop: "20px"}}>Loading chart...</p>
+                          <p style={{ fontSize: "13px", color: "#6b4c22", textAlign: "center", marginTop: "20px" }}>Loading chart...</p>
                         )}
                       </div>
                     </div>
