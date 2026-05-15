@@ -45,7 +45,7 @@ body {
   max-width: 350px;
   width: 100%;
   max-height: 135px;
-  background-color: rgba(255, 255, 255, 0.2);
+  /* background-color: rgba(255, 255, 255, 0.2); */
   border: 2px dashed #5c3d2e;
   border-radius: 16px;
   /* box-shadow: 0 8px 24px rgba(92, 61, 46, 0.1); */
@@ -54,8 +54,8 @@ body {
 
 
 .empty-icon {
-  width: 30px;
-  height: 30px;
+  width: 55px;
+  height: 55px;
   color: #5c3d2e;
   /* margin-bottom: 20px; */
   opacity: 0.9;
@@ -75,4 +75,9 @@ body {
   /* margin: 0 0 24px 0; */
   /* line-height: 1.5; */
   opacity: 0.8;
+}
+
+.titles {
+  margin-top: 25px;
+  margin-left: 25px;
 }

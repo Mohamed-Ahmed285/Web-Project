@@ -3,98 +3,15 @@ import { useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
 import "./AdminDashboard.css";
 
-const MOCK_DATA = {
-  stats: {
-    totalBooks: 1248,
-    totalUsers: 342,
-    topRatedAvg: 4.7,
-  },
-  popularBooks: [
-    {
-      _id: "1",
-      title: "The Alchemist",
-      author: "Paulo Coelho",
-      totalComments: 320,
-    },
-    {
-      _id: "2",
-      title: "Atomic Habits",
-      author: "James Clear",
-      totalComments: 278,
-    },
-    {
-      _id: "3",
-      title: "The 48 Laws of Power",
-      author: "Robert Greene",
-      totalComments: 245,
-    },
-    {
-      _id: "4",
-      title: "Think and Grow Rich",
-      author: "Napoleon Hill",
-      totalComments: 198,
-    },
-    {
-      _id: "5",
-      title: "The Power of Habit",
-      author: "Charles Duhigg",
-      totalComments: 176,
-    },
-  ],
-  recentActivity: [
-    {
-      id: "a2",
-      type: "register",
-      user: "Sarah Smith",
-      book: null,
-      time: "1 hour ago",
-    },
-    {
-      id: "a3",
-      type: "add",
-      user: "Admin",
-      book: "Atomic Habits",
-      time: "3 hours ago",
-    },
-    {
-      id: "a4",
-      type: "review",
-      user: "Omar Khaled",
-      book: "The 48 Laws of Power",
-      time: "5 hours ago",
-    },
-  ],
-  monthlyActivity: [
-    { month: "Jan", count: 90 },
-    { month: "Feb", count: 180 },
-    { month: "Mar", count: 260 },
-    { month: "Apr", count: 210 },
-    { month: "May", count: 380 },
-    { month: "Jun", count: 260 },
-    { month: "Jul", count: 310 },
-  ],
-};
-
-function useDashboardData() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    setTimeout(() => {
-      setData(MOCK_DATA);
-      setLoading(false);
-    }, 600);
-  }, []);
-  return { data, loading };
-}
-
 function MiniChart({ data }) {
   if (!data || data.length === 0) return null;
   const W = 400,
     H = 100,
     pad = 20;
-  const max = Math.max(...data.map((d) => d.count));
+  const counts = data.map((d) => Number(d.count) || 0);
+  const max = Math.max(...counts) || 1;
   const points = data.map((d, i) => ({
-    x: pad + (i / (data.length - 1)) * (W - pad * 2),
+    x: pad + (i / Math.max(1, data.length - 1)) * (W - pad * 2),
     y: H - pad - (d.count / max) * (H - pad * 2),
     ...d,
   }));
@@ -169,13 +86,14 @@ function timeAgo(dateString) {
 }
 
 export default function AdminDashboard() {
-  const { data } = useDashboardData();
   const [panel, setPanel] = useState(0);
   const [animating, setAnimating] = useState(false);
   const [animDir, setAnimDir] = useState("forward");
   const [loading, setLoading] = useState(true);
   const [topbooks, setBooks] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [dashboardData, setDashboardData] = useState(null);
+  const adminName = localStorage.getItem("first_name") || "Admin";
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -199,11 +117,8 @@ export default function AdminDashboard() {
         setBooks(topbooks);
       } catch (err) {
         console.error("Failed to fetch books", err);
-      } finally {
-        setLoading(false);
       }
     };
-    fetchBooks();
 
     const fetchActivities = async () => {
       try {
@@ -219,8 +134,28 @@ export default function AdminDashboard() {
         console.error("Failed to fetch activities", err);
       }
     };
-    fetchActivities();
 
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5000/api/dashboard/stats', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setDashboardData(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats", err);
+      }
+    };
+
+    const loadDashboard = async () => {
+      await Promise.all([fetchBooks(), fetchActivities(), fetchStats()]);
+      setLoading(false);
+    };
+
+    loadDashboard();
   }, []);
 
   const goTo = (idx) => {
@@ -234,7 +169,7 @@ export default function AdminDashboard() {
   };
 
   const activityIcons = {
-    borrow: "📖",
+    read: "📖",
     register: "👤",
     add: "➕",
     review: "⭐",
@@ -244,15 +179,34 @@ export default function AdminDashboard() {
     <PageLayout>
       {/* ── Header ── */}
       <div className="adm-header">
-        <div>
-          <h1 className="adm-title">Admin Dashboard</h1>
-          <p className="adm-subtitle">Overview of your system</p>
+        <div className="adm-header-left">
+          <div
+            className="adm-avatar-btn"
+            onClick={() => navigate("/profile")}
+            title="View profile"
+          >
+            {localStorage.getItem("avatar_url") ? (
+              <img
+                src={localStorage.getItem("avatar_url")}
+                alt={adminName}
+                className="adm-avatar-img"
+              />
+            ) : (
+              <span className="adm-avatar-initial">
+                {adminName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+
+          <div>
+            <h1 className="adm-title">Admin Dashboard</h1>
+            <p className="adm-subtitle">Overview of your system</p>
+          </div>
         </div>
       </div>
-
-      {loading && <div className="adm-loading">Loading...</div>}
-
-      {data && topbooks && (
+      {loading ? (
+        <div className="adm-loading">Loading...</div>
+      ) : (
         <>
           {/* ── Sliding Panel ── */}
           <div className="adm-slider-wrap">
@@ -271,22 +225,27 @@ export default function AdminDashboard() {
                   <div className="adm-panel1">
                     <div className="adm-stats">
                       <StatCard
-                        value={data.stats.totalBooks.toLocaleString()}
+                        value={dashboardData?.stats?.totalBooks?.toLocaleString() || "0"}
                         label="Total Books"
                       />
                       <StatCard
-                        value={data.stats.totalUsers.toLocaleString()}
+                        value={dashboardData?.stats?.totalUsers?.toLocaleString() || "0"}
                         label="Total Users"
                       />
                       <StatCard
-                        value={data.stats.topRatedAvg.toFixed(1)}
-                        label="Top Rated Avg"
+                        value={dashboardData?.stats?.topRatedAvg?.toFixed(1) || "0.0"}
+                        label="Rates Avg"
                       />
                     </div>
                     <div className="adm-card adm-chart-card">
                       <h2 className="adm-card-title">Reading Activity</h2>
                       <div className="adm-chart-wrap">
-                        <MiniChart data={data.monthlyActivity} />
+                        {/* Only render the chart if the data has successfully loaded */}
+                        {dashboardData?.monthlyActivity ? (
+                          <MiniChart data={dashboardData.monthlyActivity} />
+                        ) : (
+                          <p style={{ fontSize: "13px", color: "#6b4c22", textAlign: "center", marginTop: "20px" }}>Loading chart...</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -326,9 +285,9 @@ export default function AdminDashboard() {
                                   {activityIcons[act.type] || "•"}
                                 </span>
                                 <div className="adm-act-text">
-                                  {act.type === "borrow" && (
+                                  {act.type === "read" && (
                                     <span>
-                                      <strong>{act.user}</strong> borrowed <em>{act.book}</em>
+                                      <strong>{act.user}</strong> read <em>{act.book}</em>
                                     </span>
                                   )}
                                   {act.type === "register" && (

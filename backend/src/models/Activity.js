@@ -4,7 +4,7 @@ const activitySchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ["register", "add", "review"],
+      enum: ["register", "add", "review", "read"],
       required: true,
     },
     user: {

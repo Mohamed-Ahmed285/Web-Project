@@ -94,7 +94,7 @@ export default function PageLayout({ children }) {
             }}
             style={{
               position: "absolute",
-              top: bp === "mobile" ? "0px" : "18px",
+              top: bp === "tablet" ? "-25px" :  bp === "mobile" ? "0px" : "18px",
               right: bp === "mobile" ? "0px" : "18px",
               zIndex: 100,
               background: "none",

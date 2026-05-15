@@ -6,17 +6,17 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminCatalog from "./pages/AdminCatalog";
 import BookDetails from "./pages/BookDetails";
 import CollectionView from "./pages/CollectionView";
+import Profile from "./pages/ProfilePage";
 import { BookStoreProvider } from "./context/BookStoreContext";
 import "./App.css";
 
-function PrivateRoute({ children, adminOnly = false }) {
+function PrivateRoute({ children, adminOnly = false, allowAdmin = false }) {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
   if (!token) return <Navigate to="/login" replace />;
-  if (adminOnly && role !== "admin")
-    return <Navigate to="/dashboard" replace />;
-  if (!adminOnly && role === "admin") return <Navigate to="/admin" replace />;
+  if (adminOnly && role !== "admin") return <Navigate to="/dashboard" replace />;
+  if (!adminOnly && !allowAdmin && role === "admin") return <Navigate to="/admin" replace />;
 
   return children;
 }
@@ -71,6 +71,15 @@ export default function App() {
             element={
               <PrivateRoute adminOnly>
                 <AdminCatalog />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute allowAdmin>
+                <Profile />
               </PrivateRoute>
             }
           />
