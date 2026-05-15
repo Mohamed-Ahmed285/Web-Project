@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Activity from "../models/Activity.js";
 import bcrypt from "bcrypt";
 import { createToken } from "../utils/tokens.js";
 
@@ -62,6 +63,7 @@ const register = async (req, res) => {
     await Activity.create({
       type: "register",
       user: `${user.first_name} ${user.second_name}`,
+      book: null,
     });
 
     res.status(201).json({
