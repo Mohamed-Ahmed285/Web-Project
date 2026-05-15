@@ -70,8 +70,8 @@ const register = async (req, res) => {
       token,
       user: {
         id: user.id,
-        firstName: user.first_name,
-        secondName: user.second_name,
+        first_name: user.first_name,
+        second_name: user.second_name,
         email: user.email,
         gender: user.gender,
         is_admin: user.is_admin,
