@@ -131,7 +131,8 @@ function DefaultShelfCard({ title, icon, path }) {
 }
 
 // ── Collection Card ───────────────────────────────────────────────────────────
-function CollectionCard({ col }) {
+function CollectionCard({ col, onDelete }) {
+  const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
   const placeholderImg = emptyCollectionImg;
   const booksToShow = Array.isArray(col.books) ? col.books.slice(0, 2) : [];
@@ -143,9 +144,24 @@ function CollectionCard({ col }) {
 
   return (
     <div
-      style={s.collCard}
+      style={{ ...s.collCard, position: "relative" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onClick={() => navigate(`/collection/${col._id}`)}
     >
+      {onDelete && (
+        <button
+          style={{ ...s.deleteBtn, opacity: hovered ? 1 : 0 }}
+          onClick={(e) => { e.stopPropagation(); onDelete(col); }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f5e4b9" strokeWidth="2" style={{ width: 13, height: 13 }}>
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14H6L5 6" />
+            <path d="M10 11v6M14 11v6" />
+            <path d="M9 6V4h6v2" />
+          </svg>
+        </button>
+      )}
       <div style={s.collCovers}>
         {booksToShow.length > 0 ? (
           booksToShow.map((b, i) => (
@@ -173,6 +189,57 @@ function CollectionCard({ col }) {
         )}
       </div>
       <p style={s.collName}>{col.name}</p>
+    </div>
+  );
+}
+
+// ── Delete Collection Modal ───────────────────────────────────────────────────
+function DeleteCollectionModal({ col, onConfirm, onClose }) {
+  const overlayRef = useRef(null);
+
+  useEffect(() => {
+    const h = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+
+  return (
+    <div
+      className="atc-overlay"
+      ref={overlayRef}
+      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+    >
+      <div className="atc-modal" role="dialog" aria-modal="true" style={{ maxWidth: "420px" }}>
+        <div style={{ padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(101,67,33,0.15)" }}>
+          <h3 style={{ margin: 0, fontFamily: "'Cinzel', serif", fontSize: "18px", color: "#2c1a07" }}>
+            Delete Collection
+          </h3>
+          <button className="atc-close-btn" onClick={onClose} aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div style={{ padding: "28px 24px", textAlign: "center" }}>
+          <p style={{ fontFamily: "'EB Garamond', serif", fontSize: "18px", color: "#2c1a07", margin: 0 }}>
+            Are you sure you want to delete <strong>"{col.name}"</strong>?
+          </p>
+          <p style={{ fontFamily: "'EB Garamond', serif", fontSize: "14px", color: "#8b5e3c", marginTop: "10px" }}>
+            This action cannot be undone.
+          </p>
+        </div>
+        <div className="atc-footer">
+          <button className="atc-btn atc-btn--ghost" onClick={onClose}>Cancel</button>
+          <button
+            className="atc-btn atc-btn--primary"
+            style={{ background: "#8b1a1a", borderColor: "#6b1010" }}
+            onClick={onConfirm}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -280,10 +347,12 @@ function CreateCollectionModal({ onClose }) {
 export default function UserDashboard() {
   const navigate = useNavigate();
   const [books, setBooks] = useState([]);
-  const { collections, isCollectionsLoading, fetchCollections } = useBookStore();
+  const { collections, isCollectionsLoading, fetchCollections, deleteCollection } = useBookStore();
   const [userName, setUserName] = useState("Reader");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [collectionToDelete, setCollectionToDelete] = useState(null);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -311,7 +380,10 @@ export default function UserDashboard() {
 
         const booksData = await booksRes.json();
         setBooks(booksData);
-        setUserName(localStorage.getItem("first_name") || "Reader");
+        const userRes = await fetch("/api/user/me", { headers });
+        const userData = await userRes.json();
+        setUserName(userData.first_name || "Reader");
+        setAvatarUrl(userData.profile_image || "");
       } catch (error) {
         console.error("Error fetching data:", error);
         if (error.message === "API error") {
@@ -374,9 +446,9 @@ export default function UserDashboard() {
             style={s.avatarBtn}
             title="View profile"
           >
-            {localStorage.getItem("avatar_url") ? (
+            {avatarUrl ? (
               <img
-                src={localStorage.getItem("avatar_url")}
+                src={avatarUrl}
                 alt={userName}
                 style={s.avatarImg}
               />
@@ -475,7 +547,7 @@ export default function UserDashboard() {
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((c) => (
                 <div key={c._id} style={{ flexShrink: 0 }}>
-                  <CollectionCard col={c} />
+                <CollectionCard col={c} onDelete={(col) => setCollectionToDelete(col)} />
                 </div>
               ))}
           </ScrollRow>
@@ -488,6 +560,17 @@ export default function UserDashboard() {
 
       {isCreateModalOpen && (
         <CreateCollectionModal onClose={() => setIsCreateModalOpen(false)} />
+      )}
+
+      {collectionToDelete && (
+        <DeleteCollectionModal
+          col={collectionToDelete}
+          onClose={() => setCollectionToDelete(null)}
+          onConfirm={async () => {
+            await deleteCollection(collectionToDelete._id);
+            setCollectionToDelete(null);
+          }}
+        />
       )}
     </PageLayout>
   );
@@ -754,5 +837,21 @@ const s = {
     color: "#f9edcd",
     lineHeight: 1,
     userSelect: "none",
+  },
+  deleteBtn: {
+    position: "absolute",
+    top: "8px",
+    right: "8px",
+    background: "#5a1a1a",
+    border: "none",
+    borderRadius: "6px",
+    width: "26px",
+    height: "26px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "opacity 0.2s",
+    zIndex: 2,
   },
 };

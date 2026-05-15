@@ -93,7 +93,8 @@ export default function AdminDashboard() {
   const [topbooks, setBooks] = useState([]);
   const [activities, setActivities] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
-  const adminName = localStorage.getItem("first_name") || "Admin";
+  const [adminName, setAdminName] = useState(localStorage.getItem("first_name") || "Admin");
+  const [avatarUrl, setAvatarUrl] = useState(localStorage.getItem("avatar_url") || "");
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -152,6 +153,13 @@ export default function AdminDashboard() {
 
     const loadDashboard = async () => {
       await Promise.all([fetchBooks(), fetchActivities(), fetchStats()]);
+      const token = localStorage.getItem("token");
+      const userRes = await fetch("/api/user/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userData = await userRes.json();
+      setAdminName(userData.first_name || "Admin");
+      setAvatarUrl(userData.profile_image || "");
       setLoading(false);
     };
 
@@ -177,37 +185,36 @@ export default function AdminDashboard() {
 
   return (
     <PageLayout>
-      {/* ── Header ── */}
-      <div className="adm-header">
-        <div className="adm-header-left">
-          <div
-            className="adm-avatar-btn"
-            onClick={() => navigate("/profile")}
-            title="View profile"
-          >
-            {localStorage.getItem("avatar_url") ? (
-              <img
-                src={localStorage.getItem("avatar_url")}
-                alt={adminName}
-                className="adm-avatar-img"
-              />
-            ) : (
-              <span className="adm-avatar-initial">
-                {adminName.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
-
-          <div>
-            <h1 className="adm-title">Admin Dashboard</h1>
-            <p className="adm-subtitle">Overview of your system</p>
-          </div>
-        </div>
-      </div>
       {loading ? (
-        <div className="adm-loading">Loading...</div>
+       <div className="adm-loading" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>Loading...</div>
       ) : (
         <>
+          {/* ── Header ── */}
+          <div className="adm-header">
+            <div className="adm-header-left">
+              <div
+                className="adm-avatar-btn"
+                onClick={() => navigate("/profile")}
+                title="View profile"
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={adminName}
+                    className="adm-avatar-img"
+                  />
+                ) : (
+                  <span className="adm-avatar-initial">
+                    {adminName.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h1 className="adm-title">Admin Dashboard</h1>
+                <p className="adm-subtitle">Overview of your system</p>
+              </div>
+            </div>
+          </div>
           {/* ── Sliding Panel ── */}
           <div className="adm-slider-wrap">
             <button
