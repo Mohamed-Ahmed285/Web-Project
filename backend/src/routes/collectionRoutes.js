@@ -58,7 +58,7 @@ router.post("/", authMiddleware, createCollection);
 router.post("/book/:bookId", authMiddleware, createCollectionWithBook);
 /**
  * @swagger
- * /api/collections/wbook/{bookId}:
+ * /api/collections/book/{bookId}:
  *   post:
  *     tags: [Collections]
  *     summary: Create a collection and add a book to it
