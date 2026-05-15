@@ -164,15 +164,18 @@ export default function CollectionView() {
             </div>
           </div>
 
-          <div style={s.lheader}>
-            <button
-              style={{ ...s.DeleteColl, opacity: isDeletingColl ? 0.6 : 1 }}
-              onClick={handleDeleteCollection}
-              disabled={isDeletingColl}
-            >
-              {isDeletingColl ? "Deleting..." : "Delete Collection"}
-            </button>
-          </div>
+          {/* Only show the delete button if the collection is NOT a default shelf */}
+          {!["want-to-read", "completed", "reading"].includes(id) && (
+            <div style={s.lheader}>
+              <button
+                style={{ ...s.DeleteColl, opacity: isDeletingColl ? 0.6 : 1 }}
+                onClick={handleDeleteCollection}
+                disabled={isDeletingColl}
+              >
+                {isDeletingColl ? "Deleting..." : "Delete Collection"}
+              </button>
+            </div>
+          )}
 
         </div>
 
