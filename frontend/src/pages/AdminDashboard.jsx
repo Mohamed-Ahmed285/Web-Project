@@ -214,7 +214,7 @@ export default function AdminDashboard() {
                       />
                       <StatCard
                         value={dashboardData?.stats?.topRatedAvg?.toFixed(1) || "0.0"}
-                        label="Top Rated Avg"
+                        label="Rates Avg"
                       />
                     </div>
                     <div className="adm-card adm-chart-card">
