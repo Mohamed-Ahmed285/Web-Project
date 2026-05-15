@@ -55,7 +55,6 @@ router.get("/", authMiddleware, getMyCollections);
  */
 router.post("/", authMiddleware, createCollection);
 
-router.post("/book/:bookId", authMiddleware, createCollectionWithBook);
 /**
  * @swagger
  * /api/collections/book/{bookId}:
@@ -83,13 +82,14 @@ router.post("/book/:bookId", authMiddleware, createCollectionWithBook);
  *       201:
  *         description: Collection created and book added
  */
+router.post("/book/:bookId", authMiddleware, createCollectionWithBook);
 
 /**
  * @swagger
  * /api/collections/{id}:
  *   get:
  *     tags: [Collections]
- *     summary: Get collections for a specific book
+ *     summary: Get user's collections for a specific book
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -100,7 +100,7 @@ router.post("/book/:bookId", authMiddleware, createCollectionWithBook);
  *           type: string
  *     responses:
  *       200:
- *         description: Collections for the book
+ *         description: user's Collections for the book
  */
 router.get("/:id", authMiddleware, getUserCollectionsForBook);
 
@@ -134,8 +134,60 @@ router.get("/:id", authMiddleware, getUserCollectionsForBook);
  */
 router.post("/addBook/:id", authMiddleware, addBookToCollection);
 
+/**
+ * @swagger
+ * /api/collections/{id}:
+ *   delete:
+ *     tags: [Collections]
+ *     summary: Delete a collection by ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Collection ID
+ *     responses:
+ *       200:
+ *         description: Collection deleted successfully
+ *       404:
+ *         description: Collection not found
+ */
 router.delete("/:id", authMiddleware, DeleteCollection);
 
+/**
+ * @swagger
+ * /api/collections/removeBook/{id}:
+ *   delete:
+ *     tags: [Collections]
+ *     summary: Remove a book from a collection
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Collection ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               bookId:
+ *                 type: string
+ *             required: ["bookId"]
+ *     responses:
+ *       200:
+ *         description: Book removed from collection successfully
+ *       404:
+ *         description: Collection or book not found
+ */
 router.delete("/removeBook/:id", authMiddleware, DeleteBookFromCollection);
 
 export default router;
