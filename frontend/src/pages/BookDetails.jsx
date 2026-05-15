@@ -260,53 +260,55 @@ function AddToCollectionModal({ book, onClose }) {
                   </button>
                 </div>
               ) : (
-                collections.map((col) => {
-                  const alreadyIn = col.books && col.books.some(b => b === book._id || b._id === book._id);
-                  const isSelected = selected === col._id;
+                collections
+                  .filter((col) => !["want-to-read", "completed", "reading"].includes(col._id))
+                  .map((col) => {
+                    const alreadyIn = col.books && col.books.some(b => b === book._id || b._id === book._id);
+                    const isSelected = selected === col._id;
 
-                  return (
-                    <button
-                      key={col._id}
-                      className={[
-                        "atc-row",
-                        isSelected ? "atc-row--selected" : "",
-                        alreadyIn ? "atc-row--has-book" : "",
-                      ].join(" ").trim()}
-                      onClick={() => {
-                        if (alreadyIn) return;
-                        setSelected(col._id);
-                      }}
-                    >
-                      {col.img && (
-                        <div className="atc-covers">
-                          <img
-                            src={col.img}
-                            alt={col.name}
-                            className="atc-cover-img"
-                            style={{ position: "relative", left: 0, transform: "none", zIndex: 1 }}
-                          />
-                        </div>
-                      )}
-
-                      <div className="atc-row-info">
-                        <span className="atc-row-name">{col.name}</span>
-                        <span className="atc-row-meta">
-                          {col.books.length} book{col.books.length !== 1 ? "s" : ""}
-                        </span>
-                      </div>
-
-                      <div className="atc-row-right">
-                        {alreadyIn ? (
-                          <span className="atc-badge atc-badge--in">In collection</span>
-                        ) : isSelected ? (
-                          <span className="atc-badge atc-badge--selected">✓ Selected</span>
-                        ) : (
-                          <span className="atc-badge atc-badge--idle">Select</span>
+                    return (
+                      <button
+                        key={col._id}
+                        className={[
+                          "atc-row",
+                          isSelected ? "atc-row--selected" : "",
+                          alreadyIn ? "atc-row--has-book" : "",
+                        ].join(" ").trim()}
+                        onClick={() => {
+                          if (alreadyIn) return;
+                          setSelected(col._id);
+                        }}
+                      >
+                        {col.img && (
+                          <div className="atc-covers">
+                            <img
+                              src={col.img}
+                              alt={col.name}
+                              className="atc-cover-img"
+                              style={{ position: "relative", left: 0, transform: "none", zIndex: 1 }}
+                            />
+                          </div>
                         )}
-                      </div>
-                    </button>
-                  );
-                })
+
+                        <div className="atc-row-info">
+                          <span className="atc-row-name">{col.name}</span>
+                          <span className="atc-row-meta">
+                            {col.books.length} book{col.books.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+
+                        <div className="atc-row-right">
+                          {alreadyIn ? (
+                            <span className="atc-badge atc-badge--in">In collection</span>
+                          ) : isSelected ? (
+                            <span className="atc-badge atc-badge--selected">✓ Selected</span>
+                          ) : (
+                            <span className="atc-badge atc-badge--idle">Select</span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })
               )}
             </div>
 
@@ -433,11 +435,13 @@ function AddToCollectionModal({ book, onClose }) {
               {collections.length > 0 && (
                 <div className="atc-existing-names">
                   <span className="atc-existing-label">Existing:</span>
-                  {collections.map((c) => (
-                    <span key={c._id} className="atc-existing-chip">
-                      {c.name}
-                    </span>
-                  ))}
+                  {collections
+                    .filter((c) => !["want-to-read", "completed", "reading"].includes(c._id))
+                    .map((c) => (
+                      <span key={c._id} className="atc-existing-chip">
+                        {c.name}
+                      </span>
+                    ))}
                 </div>
               )}
             </div>
@@ -582,7 +586,7 @@ export default function BookDetails() {
                   }
                 `}</style>
           <div style={s.spinner} />
-          <p style={s.loadingText}>Loading your dashboard...</p>
+          <p style={s.loadingText}>Loading Book Details...</p>
         </div>
       </PageLayout>
     );

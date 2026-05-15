@@ -280,7 +280,7 @@ function CreateCollectionModal({ onClose }) {
 export default function UserDashboard() {
   const navigate = useNavigate();
   const [books, setBooks] = useState([]);
-  const { collections, isCollectionsLoading } = useBookStore();
+  const { collections, isCollectionsLoading, fetchCollections } = useBookStore();
   const [userName, setUserName] = useState("Reader");
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -303,7 +303,7 @@ export default function UserDashboard() {
           Authorization: `Bearer ${token}`,
         };
 
-        const booksRes = await fetch("http://localhost:5000/api/books/popular?limit=15", { headers });
+        const booksRes = await fetch("http://localhost:5000/api/books", { headers });
 
         if (!booksRes.ok) {
           throw new Error("API error");
@@ -323,7 +323,8 @@ export default function UserDashboard() {
       }
     };
     fetchDashboardData();
-  }, []);
+    fetchCollections();
+  }, [fetchCollections]);
 
   if (isCollectionsLoading || isLoading) {
     return (
@@ -460,7 +461,7 @@ export default function UserDashboard() {
           >+ Create Collection</button>
         </div>
 
-        {collections.length === 0 ? (
+        {collections.length === 3 ? (
           <div style={s.emptyCollectionState}>
             <p style={s.emptyCollectionText}>No collections yet. Create one to start organizing your books.</p>
           </div>

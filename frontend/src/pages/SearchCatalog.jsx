@@ -102,7 +102,7 @@ export default function SearchCatalog({ placeholder = "Search about your book...
           <div style={styles.resultsList}>
             {results.map((book) => (
               <div
-                key={book.id}
+                key={book._id}
                 style={styles.resultItem}
                 onClick={() => handleSelect(book)}
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(101,67,33,0.10)"}
