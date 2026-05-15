@@ -17,7 +17,30 @@ const router = express.Router();
 
 
 //=============================== admin ==============================
-// POST /api/books
+/**
+ * @swagger
+ * /api/books:
+ *   post:
+ *     tags: [Books]
+ *     summary: Create a new book (admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateBookRequest'
+ *     responses:
+ *       201:
+ *         description: Book created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ *       400:
+ *         description: Validation error
+ */
 router.post("/", authMiddleware, createBook);
 
 //========================get books by search=============================
@@ -52,6 +75,27 @@ router.post("/", authMiddleware, createBook);
 router.get("/search", authMiddleware, getBooksPaginated);
 
 // DELETE /api/books/:id
+/**
+ * @swagger
+ * /api/books/{id}:
+ *   delete:
+ *     tags: [Books]
+ *     summary: Delete a book by ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Book ID
+ *     responses:
+ *       200:
+ *         description: Book deleted successfully
+ *       404:
+ *         description: Book not found
+ */
 router.delete("/:id", authMiddleware, deleteBook);
 
 

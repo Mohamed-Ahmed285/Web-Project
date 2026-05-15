@@ -134,6 +134,12 @@ function DefaultShelfCard({ title, icon, path }) {
 function CollectionCard({ col }) {
   const navigate = useNavigate();
   const placeholderImg = emptyCollectionImg;
+  const booksToShow = Array.isArray(col.books) ? col.books.slice(0, 2) : [];
+  const getCoverSrc = (book) => {
+    if (!book) return placeholderImg;
+    if (typeof book.cover_image === "string") return book.cover_image || placeholderImg;
+    return book.cover_image?.medium || placeholderImg;
+  };
 
   return (
     <div
@@ -141,15 +147,15 @@ function CollectionCard({ col }) {
       onClick={() => navigate(`/collection/${col._id}`)}
     >
       <div style={s.collCovers}>
-        {col.books && col.books.length > 0 ? (
-          col.books.slice(0, 2).map((b, i) => (
+        {booksToShow.length > 0 ? (
+          booksToShow.map((b, i) => (
             <img
               key={b._id || i}
-              src={b.cover_image.medium || placeholderImg}
+              src={getCoverSrc(b)}
               alt={b.title || "Book"}
               style={{
                 ...s.collCover,
-                left: `${i * 38}px`,
+                left: `${i === 0 ? 0 : 38}px`,
                 zIndex: i === 0 ? 1 : 2,
                 transform: i === 0 ? "rotate(-6deg)" : "rotate(3deg)",
               }}
