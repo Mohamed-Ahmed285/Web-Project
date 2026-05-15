@@ -10,8 +10,7 @@ const getPopularBooks = async (req, res) => {
     // O(1)
     const popularBooks = await Book.find()
       .sort({ total_reads: -1 })
-      .limit(limit)
-      .select("title author total_reads");
+      .limit(limit);
 
     res.json(popularBooks);
   } catch (error) {
@@ -43,17 +42,14 @@ const getBooksPaginated = async (req, res) => {
       dbQuery = {
         $or: [
           { title: { $regex: search, $options: "i" } }, // 'i' makes it case-insensitive
-          { author: { $regex: search, $options: "i" } }
-        ]
+          { author: { $regex: search, $options: "i" } },
+        ],
       };
     }
 
     const [books, totalBooks] = await Promise.all([
-      Book.find(dbQuery)
-        .sort({ _id: -1 })
-        .skip(skip)
-        .limit(limit),
-      Book.countDocuments(dbQuery)
+      Book.find(dbQuery).sort({ _id: -1 }).skip(skip).limit(limit),
+      Book.countDocuments(dbQuery),
     ]);
 
     const totalPages = Math.ceil(totalBooks / limit);
@@ -62,7 +58,7 @@ const getBooksPaginated = async (req, res) => {
       books,
       currentPage: page,
       totalPages,
-      totalBooks
+      totalBooks,
     });
   } catch (error) {
     console.error("Error fetching books:", error);
@@ -223,4 +219,11 @@ const deleteBook = async (req, res) => {
   }
 };
 
-export { getBooks, getBookById, createBook, deleteBook, getPopularBooks, getBooksPaginated };
+export {
+  getBooks,
+  getBookById,
+  createBook,
+  deleteBook,
+  getPopularBooks,
+  getBooksPaginated,
+};

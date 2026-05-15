@@ -292,9 +292,17 @@ export default function UserDashboard() {
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token");
-        const headers = { Authorization: `Bearer ${token}` };
-        const booksRes = await fetch("http://localhost:5000/api/books", { headers });
-        if (!booksRes.ok) throw new Error("API error");
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        const booksRes = await fetch("http://localhost:5000/api/books/popular?limit=15", { headers });
+
+        if (!booksRes.ok) {
+          throw new Error("API error");
+        }
+
         const booksData = await booksRes.json();
         setBooks(booksData);
         setUserName(localStorage.getItem("first_name") || "Reader");
@@ -441,9 +449,9 @@ export default function UserDashboard() {
       <section style={s.section}>
         <div style={s.sectionHeader}>
           <h2 style={s.sectionTitle}>Custom Collections</h2>
-          <button style={s.createCollectionBtn} onClick={() => setIsCreateModalOpen(true)}>
-            + Create Collection
-          </button>
+          <button style={s.createCollectionBtn}
+            onClick={() => setIsCreateModalOpen(true)}
+          >+ Create Collection</button>
         </div>
 
         {collections.length === 0 ? (
@@ -593,6 +601,13 @@ const s = {
     fontWeight: 600,
     color: "#2c1a07",
     letterSpacing: "0.04em",
+  },
+
+  // ── New Styles for Default Shelves ──
+  defaultShelvesRow: {
+    display: "flex",
+    gap: "20px",
+    flexWrap: "wrap",
   },
   defaultShelfCard: {
     width: "100%",
