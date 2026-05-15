@@ -131,15 +131,17 @@ export default function CollectionView() {
         {/* Divider */}
         <div style={s.divider} />
 
-        {/* Books grid */}
+        {/* Books grid — Bootstrap responsive */}
         {safeBooks.length === 0 ? (
           <div style={s.emptyState}>
             <p style={s.emptyText}>This collection has no books yet.</p>
           </div>
         ) : (
-          <div style={s.grid}>
+          <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
             {safeBooks.map((book) => (
-              <BookCard key={book._id} book={book} onDelete={setConfirmBook} />
+              <div key={book._id} className="col d-flex justify-content-center">
+                <BookCard book={book} onDelete={setConfirmBook} />
+              </div>
             ))}
           </div>
         )}
@@ -197,6 +199,7 @@ const s = {
     alignItems: "center",
     gap: "40px",
     marginTop: "4px",
+    flexWrap: "wrap",
   },
   collectionIconRow: {
     position: "relative",
@@ -238,12 +241,6 @@ const s = {
     background: "linear-gradient(to right, rgba(101,67,33,0.5), rgba(101,67,33,0.05))",
     borderRadius: "2px",
   },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
-    gap: "28px 20px",
-    paddingBottom: "32px",
-  },
   bookCard: {
     display: "flex",
     flexDirection: "column",
@@ -256,6 +253,7 @@ const s = {
     background: "rgba(255,255,255,0.10)",
     border: "1px solid rgba(101,67,33,0.15)",
     backdropFilter: "blur(2px)",
+    width: "130px",
   },
   deleteBtn: {
     position: "absolute",
