@@ -76,3 +76,8 @@ body {
   /* line-height: 1.5; */
   opacity: 0.8;
 }
+
+.titles {
+  margin-top: 25px;
+  margin-left: 25px;
+}

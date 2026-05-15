@@ -16,10 +16,10 @@ mongoose.connect(process.env.MONGO_URI);
 const importData = async () => {
   try {
     // 1. Wipe the database clean first
-    await Book.deleteMany(); 
+    // await Book.deleteMany(); 
     
     // 2. Insert activities
-    await Book.insertMany(books); // <-- Insert new activities
+    await Activity.insertMany(activities); // <-- Insert new activities
 
     console.log(" Data Imported Successfully!");
     process.exit();

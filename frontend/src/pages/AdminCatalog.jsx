@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
 
 // ── Scoring / ranking helper ───────────────────────────────────────────────────
@@ -86,6 +87,7 @@ function AddBookDialog({ onClose, onAdd, isAdding }) {
 
 // ── Main AdminDashboard ────────────────────────────────────────────────────────
 export default function AdminDashboard() {
+  // const navigate = useNavigate();
   const [books, setBooks]       = useState([]);
   const [query, setQuery]       = useState("");
 
@@ -197,6 +199,9 @@ const handleAdd = async (newBookData) => {
     <PageLayout>
       {/* ── Header ── */}
       <div style={s.header}>
+        {/* <button style={s.backBtn} onClick={() => navigate('/admin')}>
+          ← Back to Dashboard
+        </button> */}
         <div>
           <h1 style={s.pageTitle}>Manage Books</h1>
           <p style={s.pageSub}><em>Add new books to your library or remove existing ones.</em></p>
@@ -314,6 +319,17 @@ const s = {
     marginTop: "5px",
     letterSpacing: "0.02em",
   },
+  backBtn: {
+    background: "rgba(101,67,33,0.1)",
+    border: "1px solid rgba(101,67,33,0.4)",
+    borderRadius: "12px",
+    color: "#5a3e1b",
+    padding: "10px 16px",
+    cursor: "pointer",
+    fontFamily: "'Cinzel', serif",
+    fontSize: "13px",
+    letterSpacing: "0.06em",
+  },
   toolbar: {
     display: "flex",
     gap: "14px",
@@ -377,7 +393,7 @@ const s = {
     display: "flex",
     flexDirection: "column",
     gap: "12px",
-    padding: "30px",
+    padding: "3px",
     maxHeight: "calc(100vh - 280px)",
   },
   empty: {

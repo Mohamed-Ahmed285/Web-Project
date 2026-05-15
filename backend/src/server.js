@@ -8,6 +8,7 @@ import bookRoutes from "./routes/bookRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import userBookRoutes from "./routes/userBookRoutes.js";
 import collectionRoutes from "./routes/collectionRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use("/api/books", bookRoutes);
 app.use("/api/collections", collectionRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/user-books", userBookRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).send("Book Tracker API is running smoothly!");
