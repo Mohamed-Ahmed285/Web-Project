@@ -1,6 +1,8 @@
 import UserBook from "../models/UserBook.js";
 import Review from "../models/Review.js";
 import Book from "../models/Book.js";
+import User from "../models/User.js";
+import Activity from "../models/Activity.js";
 
 const getReadingStatus = async (req, res) => {
   const bookId = req.params.book_id;
@@ -16,16 +18,38 @@ const getReadingStatus = async (req, res) => {
 };
 
 const updateReadingStatus = async (req, res) => {
-  const { bookId, status } = req.body;
+  const { bookId, oldStatus, status } = req.body;
   const userId = req.user.id;
+  console.log(oldStatus, status);
 
   try {
-    if (!status) {
+    const user = await User.findById(userId);
+    const book = await Book.findById(bookId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (status == "none") {
       await UserBook.findOneAndDelete({ userId, bookId });
 
+      if (oldStatus == "completed") {
+        await Activity.findOneAndDelete({
+          type: "read",
+          user: `${user.first_name} ${user.second_name}`,
+          book: book.title,
+        });
+      }
       return res.json({
         message: "Status removed",
         status: null,
+      });
+    }
+
+    if (status !== "completed" && oldStatus === "completed") {
+      await Activity.findOneAndDelete({
+        type: "read",
+        user: `${user.first_name} ${user.second_name}`,
+        book: book.title,
       });
     }
 
@@ -34,6 +58,12 @@ const updateReadingStatus = async (req, res) => {
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         message: "Invalid status value",
+      });
+    }
+
+    if (!book) {
+      return res.status(404).json({
+        message: "Book not found",
       });
     }
 
@@ -50,6 +80,15 @@ const updateReadingStatus = async (req, res) => {
         runValidators: true,
       },
     );
+
+    if (status === "completed") {
+      const activity = new Activity({
+        type: "read",
+        user: `${user.first_name} ${user.second_name}`,
+        book: book.title,
+      });
+      await activity.save();
+    }
 
     res.json({
       message: "Status updated successfully",

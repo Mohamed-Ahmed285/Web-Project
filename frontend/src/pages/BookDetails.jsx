@@ -542,10 +542,18 @@ export default function BookDetails() {
 
   const handleStatusChange = async (key) => {
     // Toggle off if they click the already active status
-    const newStatus = bookData.readingStatus === key ? null : key;
+
+
+    if (bookData.readingStatus === key) {
+      return;
+    }
+
+    const oldStatus = bookData.readingStatus || "none";
+    const newStatus = key || "none";
+
     setIsStatusLoading(true);
 
-    const { success } = await updateReadingStatus(bookId, newStatus);
+    const { success } = await updateReadingStatus(bookId, oldStatus, newStatus);
 
     if (success) {
       setToast({

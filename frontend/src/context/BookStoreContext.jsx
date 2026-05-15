@@ -88,7 +88,7 @@ export function BookStoreProvider({ children }) {
   }, [patchBook]);
 
   // Update Reading Status ──
-  const updateReadingStatus = useCallback(async (bookId, status) => {
+  const updateReadingStatus = useCallback(async (bookId, oldStatus, status) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:5000/api/user-books/status`, {
@@ -97,7 +97,7 @@ export function BookStoreProvider({ children }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ bookId, status }),
+        body: JSON.stringify({ bookId, oldStatus, status }),
       });
 
       if (!response.ok) throw new Error("Failed to update status in DB");

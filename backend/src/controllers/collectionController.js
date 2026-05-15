@@ -39,8 +39,6 @@ const getMyCollections = async (req, res) => {
       }
     });
 
-    console.log(collections);
-
     res.status(200).json(collections);
   } catch (error) {
     console.error("Error fetching collections:", error);

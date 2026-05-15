@@ -465,6 +465,7 @@ export default function UserDashboard() {
                 (c) =>
                   !["want-to-read", "completed", "reading"].includes(c._id)
               )
+              .sort((a, b) => a.name.localeCompare(b.name))
               .map((c) => (
                 <div key={c._id} style={{ flexShrink: 0 }}>
                   <CollectionCard col={c} />
