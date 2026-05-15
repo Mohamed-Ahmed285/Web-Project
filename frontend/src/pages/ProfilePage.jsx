@@ -1,25 +1,70 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
 import "./ProfilePage.css";
  
 const DEFAULT_USER = {
-  name: "",
+  first_name: "",
+  second_name: "",
   email: "",
-  joinedDate: "",
-  avatar: null,
+  profile_image: "",
+  createdAt: "",
 };
  
 export default function ProfilePage() {
-  // TODO: replace with real API call — e.g. const { data: user } = useQuery(() => axios.get("/api/users/me"))
   const [user, setUser] = useState(DEFAULT_USER);
-  const [form, setForm] = useState({ name: user.name, email: user.email});
+  const [form, setForm] = useState({ firstName: "", secondName: "", email: "" });
   const [editing, setEditing] = useState(false);
-  const [avatarPreview, setAvatar] = useState(user.avatar);
+  const [avatarPreview, setAvatarPreview] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
   const [toast, setToast] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
   const fileRef = useRef();
   const navigate = useNavigate();
+ 
+  const fullName = `${user.first_name || ""} ${user.second_name || ""}`.trim();
+  const joinedDate = user.createdAt
+    ? new Date(user.createdAt).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "";
+ 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      setApiError("");
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Missing authorization token");
+
+        const response = await fetch("/api/user/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Unable to load profile");
+        }
+
+        setUser(data);
+        setForm({ firstName: data.first_name || "", secondName: data.second_name || "", email: data.email });
+        setAvatarPreview(data.profile_image || null);
+        setAvatarFile(null);
+      } catch (error) {
+        console.error("Profile fetch failed", error);
+        setApiError(error.message || "Unable to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
  
   const handleBack = () => {
     const role = localStorage.getItem("role");
@@ -29,31 +74,77 @@ export default function ProfilePage() {
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setAvatarFile(file); // TODO: POST /api/users/avatar
-    setAvatar(URL.createObjectURL(file));
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
   };
  
-  const handleSave = () => {
-    // TODO: await axios.put("/api/users/me", { ...form, avatar: avatarFile })
-    setUser((p) => ({ ...p, ...form }));
-    setEditing(false);
-    setToast(true);
-    setTimeout(() => setToast(false), 2800);
+  const handleSave = async () => {
+    setApiError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Missing authorization token");
+
+      const formData = new FormData();
+      formData.append("firstName", form.firstName.trim());
+      formData.append("secondName", form.secondName.trim());
+      formData.append("email", form.email.trim());
+      if (avatarFile) {
+        formData.append("profile_image", avatarFile);
+      }
+
+      const response = await fetch("/api/user/me", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to update profile");
+      }
+
+      setUser(data);
+      setForm({ firstName: data.first_name || "", secondName: data.second_name || "", email: data.email });
+      setAvatarPreview(data.profile_image || null);
+      setAvatarFile(null);
+      setEditing(false);
+      localStorage.setItem("first_name", data.first_name);
+      localStorage.setItem("second_name", data.second_name);
+      setToast(true);
+      setTimeout(() => setToast(false), 2800);
+    } catch (error) {
+      console.error("Profile update failed", error);
+      setApiError(error.message || "Unable to update profile");
+    }
   };
  
   const handleCancel = () => {
-    setForm({ name: user.name, email: user.email });
-    setAvatar(user.avatar);
+    setForm({ firstName: user.first_name || "", secondName: user.second_name || "", email: user.email });
+    setAvatarPreview(user.profile_image || null);
     setAvatarFile(null);
     setEditing(false);
+    setApiError("");
   };
  
-  const initials = user.name
+  const initials = fullName
     .split(" ")
+    .filter(Boolean)
     .map((w) => w[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
+ 
+  if (loading) {
+    return (
+      <PageLayout>
+        <div className="profile-wrapper">
+          <p>Loading profile...</p>
+        </div>
+      </PageLayout>
+    );
+  }
  
   return (
     <PageLayout>
@@ -91,20 +182,37 @@ export default function ProfilePage() {
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="d-none" onChange={handleAvatarChange} />
  
-          <p className="profile-name-text">{user.name}</p>
+          <div>
+            <p className="profile-name-text">{fullName || "Your Name"}</p>
+            {joinedDate && <p className="profile-subtext">Member since {joinedDate}</p>}
+          </div>
         </div>
+ 
+        {apiError && <div className="server-error mb-3">{apiError}</div>}
  
         <hr className="divider-gold mb-3" />
  
-        <div className="mb-3">
-          <label className="gold-label d-block">Full Name</label>
-          <input
-            className="form-control profile-input"
-            value={form.name}
-            disabled={!editing}
-            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-            placeholder="Your full name"
-          />
+        <div className="mb-3 d-flex gap-3 flex-wrap">
+          <div className="w-100 w-md-50">
+            <label className="gold-label d-block">First Name</label>
+            <input
+              className="form-control profile-input"
+              value={form.firstName}
+              disabled={!editing}
+              onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
+              placeholder="First name"
+            />
+          </div>
+          <div className="w-100 w-md-50">
+            <label className="gold-label d-block">Second Name</label>
+            <input
+              className="form-control profile-input"
+              value={form.secondName}
+              disabled={!editing}
+              onChange={(e) => setForm((p) => ({ ...p, secondName: e.target.value }))}
+              placeholder="Second name"
+            />
+          </div>
         </div>
  
         <div className="mb-3">

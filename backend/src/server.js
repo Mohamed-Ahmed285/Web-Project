@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
 import connectDB from "./config/db.js";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
@@ -24,6 +25,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use('/assets/profile_imgs', express.static(path.join(process.cwd(), 'assets', 'profile_imgs')));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
