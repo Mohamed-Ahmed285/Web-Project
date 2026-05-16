@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api.js";
 
 export default function SearchCatalog({ placeholder = "Search about your book...", onSearch }) {
   const [query, setQuery] = useState("");
@@ -35,7 +36,7 @@ export default function SearchCatalog({ placeholder = "Search about your book...
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         const response = await fetch(
-          `http://localhost:5000/api/books/search?search=${encodeURIComponent(query)}&limit=5`, { headers }
+          `${API_BASE_URL}/api/books/search?search=${encodeURIComponent(query)}&limit=5`, { headers }
         );
 
         if (response.ok) {

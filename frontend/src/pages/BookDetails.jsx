@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
 import { useBookStore } from "../context/BookStoreContext";
+import { API_BASE_URL } from "../config/api.js";
 import "./BookDetails.css";
 
 // ── Star display (read-only, supports decimals) ───────────────────────────────
@@ -521,7 +522,7 @@ export default function BookDetails() {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token");
 
-        const response = await fetch(`http://localhost:5000/api/books/${bookId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/books/${bookId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

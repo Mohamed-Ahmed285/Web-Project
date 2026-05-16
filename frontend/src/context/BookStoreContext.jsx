@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { TOP_BOOKS } from "../data/books";
+import { API_BASE_URL } from "../config/api.js";
 
 const BookStoreContext = createContext(null);
 
@@ -30,7 +31,7 @@ export function BookStoreProvider({ children }) {
 
       setIsCollectionsLoading(true);
 
-      const response = await fetch("http://localhost:5000/api/collections", {
+      const response = await fetch(`${API_BASE_URL}/api/collections`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -60,7 +61,7 @@ export function BookStoreProvider({ children }) {
 
       setIsPopularBooksLoading(true);
 
-      const response = await fetch("http://localhost:5000/api/books/popular?limit=15", {
+      const response = await fetch(`${API_BASE_URL}/api/books/popular?limit=15`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -110,9 +111,9 @@ export function BookStoreProvider({ children }) {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [statusRes, rateRes, reviewsRes] = await Promise.all([
-        fetch(`http://localhost:5000/api/user-books/status/${bookId}`, { headers }),
-        fetch(`http://localhost:5000/api/user-books/rate/${bookId}`, { headers }),
-        fetch(`http://localhost:5000/api/user-books/reviews/${bookId}`, { headers })
+        fetch(`${API_BASE_URL}/api/user-books/status/${bookId}`, { headers }),
+        fetch(`${API_BASE_URL}/api/user-books/rate/${bookId}`, { headers }),
+        fetch(`${API_BASE_URL}/api/user-books/reviews/${bookId}`, { headers })
       ]);
 
       let readingStatus = null;
@@ -133,7 +134,7 @@ export function BookStoreProvider({ children }) {
   const updateReadingStatus = useCallback(async (bookId, oldStatus, status) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/user-books/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/user-books/status`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -156,7 +157,7 @@ export function BookStoreProvider({ children }) {
   const submitReview = useCallback(async (bookId, rate, comment) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/user-books/review/${bookId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/user-books/review/${bookId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -194,7 +195,7 @@ export function BookStoreProvider({ children }) {
 
       const bookId = bookObj._id;
 
-      const response = await fetch(`http://localhost:5000/api/collections/addBook/${collectionId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/collections/addBook/${collectionId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ bookId })
@@ -218,8 +219,8 @@ export function BookStoreProvider({ children }) {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authorization token found");
       const endpoint = seedBookId
-        ? `http://localhost:5000/api/collections/book/${seedBookId}`
-        : "http://localhost:5000/api/collections";
+        ? `${API_BASE_URL}/api/collections/book/${seedBookId}`
+        : `${API_BASE_URL}/api/collections`;
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -271,7 +272,7 @@ export function BookStoreProvider({ children }) {
   const removeBookFromCollection = useCallback(async (collectionId, bookId) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/collections/removeBook/${collectionId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/collections/removeBook/${collectionId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -304,7 +305,7 @@ export function BookStoreProvider({ children }) {
   const deleteCollection = useCallback(async (collectionId) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/collections/${collectionId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/collections/${collectionId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

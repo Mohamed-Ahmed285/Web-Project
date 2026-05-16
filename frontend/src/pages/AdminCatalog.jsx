@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
+import { API_BASE_URL } from "../config/api.js";
 
 // ── Toast System ───────────────────────────────────────────────────────────────
 function Toast({ toasts }) {
@@ -174,7 +175,7 @@ export default function AdminCatalog() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/books/search?search=${query}&page=${page}&limit=10`, {
+        const res = await fetch(`${API_BASE_URL}/api/books/search?search=${query}&page=${page}&limit=10`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -205,7 +206,7 @@ export default function AdminCatalog() {
     setBookToDelete(null);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/books/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/books/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -226,7 +227,7 @@ export default function AdminCatalog() {
     setIsAdding(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/books", {
+      const res = await fetch(`${API_BASE_URL}/api/books`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

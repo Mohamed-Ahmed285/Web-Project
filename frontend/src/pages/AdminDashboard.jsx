@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
+import { API_BASE_URL } from "../config/api.js";
 import "./AdminDashboard.css";
 
 function MiniChart({ data }) {
@@ -106,7 +107,7 @@ export default function AdminDashboard() {
     const fetchBooks = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/books/popular?limit=5', {
+        const res = await fetch(`${API_BASE_URL}/api/books/popular?limit=5`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -124,7 +125,7 @@ export default function AdminDashboard() {
     const fetchActivities = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/activities/recent', {
+        const res = await fetch(`${API_BASE_URL}/api/activities/recent`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -139,7 +140,7 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/dashboard/stats', {
+        const res = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
