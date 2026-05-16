@@ -6,25 +6,28 @@
  */
 import express from "express";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import { getProfile, updateProfile } from "../controllers/userController.js";
 
 const router = express.Router();
-// const uploadDir = path.join(process.cwd(), "assets", "profile_imgs");
-// fs.mkdirSync(uploadDir, { recursive: true });
 
-// const storage = multer.diskStorage({
-//   destination: uploadDir,
-//   filename: (req, file, cb) => {
-//     const ext = path.extname(file.originalname);
-//     const filename = `${req.user?.id || Date.now()}-${Date.now()}${ext}`;
-//     cb(null, filename);
-//   },
-// });
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-// const upload = multer({ storage });
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "profile_imgs",
+    allowed_formats: ["jpg", "jpeg", "png", "webp", "gif"],
+  },
+});
+
+const upload = multer({ storage });
 
 /**
  * @swagger

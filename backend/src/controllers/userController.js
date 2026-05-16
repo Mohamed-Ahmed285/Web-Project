@@ -31,8 +31,7 @@ const updateProfile = async (req, res) => {
     user.email = email.toLowerCase().trim();
 
     if (req.file) {
-      const origin = `${req.protocol}://${req.get("host")}`;
-      user.profile_image = `${origin}/assets/profile_imgs/${req.file.filename}`;
+      user.profile_image = req.file.path || req.file.secure_url || req.file.filename;
     }
 
     await user.save();
