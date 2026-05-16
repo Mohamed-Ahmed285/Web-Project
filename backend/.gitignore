@@ -1,5 +1,6 @@
 # Dependency directories
 node_modules/
+mido's localhost data/
 
 # Environment variables
 .env

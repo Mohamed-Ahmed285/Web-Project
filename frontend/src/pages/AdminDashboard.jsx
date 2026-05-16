@@ -189,7 +189,6 @@ export default function AdminDashboard() {
        <div className="adm-loading" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>Loading...</div>
       ) : (
         <>
-          {/* ── Header ── */}
           <div className="adm-header">
             <div className="adm-header-left">
               <div
@@ -215,7 +214,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-          {/* ── Sliding Panel ── */}
           <div className="adm-slider-wrap">
             <button
               className={`adm-arrow adm-arrow-left ${panel === 0 ? "invisible" : ""}`}
@@ -333,7 +331,6 @@ export default function AdminDashboard() {
             </button>
           </div>
 
-          {/* Dots */}
           <div className="adm-dots">
             <span
               className={`adm-dot ${panel === 0 ? "active" : ""}`}
@@ -345,7 +342,6 @@ export default function AdminDashboard() {
             />
           </div>
 
-          {/* ── Add Book Button ── */}
           <div className="adm-footer">
             <button
               className="adm-btn-add"
