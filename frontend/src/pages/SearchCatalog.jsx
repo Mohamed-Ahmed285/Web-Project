@@ -42,7 +42,7 @@ export default function SearchCatalog({ placeholder = "Search about your book...
           const data = await response.json();
           const fetchedBooks = data.books || [];
           setResults(fetchedBooks);
-          setOpen(fetchedBooks.length > 0);
+          setOpen(true);
           if (onSearch) onSearch(query, fetchedBooks);
         }
       } catch (error) {
@@ -128,7 +128,7 @@ export default function SearchCatalog({ placeholder = "Search about your book...
                 </div>
               ))
             ) : (
-              <p style={{ padding: "10px 20px", color: "#6b4c22" }}>No books found.</p>
+              <p style={{ padding: "10px 20px", color: "#6b4c22", textAlign: "center" }}>No books found.</p>
             )}
           </div>
         </div>
