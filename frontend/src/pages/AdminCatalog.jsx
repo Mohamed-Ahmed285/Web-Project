@@ -68,7 +68,6 @@ function AddBookDialog({ onClose, onAdd, isAdding }) {
       pages: form.pages ? parseInt(form.pages) : 100,
       rating: form.rating ? parseFloat(form.rating) : 3,
     });
-    onClose();
   };
 
   return (
@@ -117,7 +116,7 @@ function AddBookDialog({ onClose, onAdd, isAdding }) {
         <div style={d.actions}>
           <button style={d.cancelBtn} onClick={onClose} disabled={isAdding}>Cancel</button>
           <button style={d.doneBtn} onClick={handleDone} disabled={isAdding}>
-            {isAdding ? "Searching & Saving..." : "Done"}
+            {isAdding ? "Searching & Saving..." : "Add"}
           </button>
         </div>
       </div>
