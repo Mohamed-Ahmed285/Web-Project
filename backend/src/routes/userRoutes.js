@@ -12,19 +12,19 @@ import authMiddleware from "../middlewares/authMiddleware.js";
 import { getProfile, updateProfile } from "../controllers/userController.js";
 
 const router = express.Router();
-const uploadDir = path.join(process.cwd(), "assets", "profile_imgs");
-fs.mkdirSync(uploadDir, { recursive: true });
+// const uploadDir = path.join(process.cwd(), "assets", "profile_imgs");
+// fs.mkdirSync(uploadDir, { recursive: true });
 
-const storage = multer.diskStorage({
-  destination: uploadDir,
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const filename = `${req.user?.id || Date.now()}-${Date.now()}${ext}`;
-    cb(null, filename);
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: uploadDir,
+//   filename: (req, file, cb) => {
+//     const ext = path.extname(file.originalname);
+//     const filename = `${req.user?.id || Date.now()}-${Date.now()}${ext}`;
+//     cb(null, filename);
+//   },
+// });
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
 /**
  * @swagger
